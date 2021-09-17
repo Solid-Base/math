@@ -1,0 +1,24 @@
+{
+    "name": "solidbase/matematica",
+    "description": "Modulo de matem\u0000tica do SolidBase",
+    "autoload": {
+        "psr-4": {
+            "SolidBase\\Matematica\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Guilherme Luiz",
+            "email": "guilherme@solidbase.com.br"
+        }
+    ],
+    "require": {
+        "solidbase/geometria": "dev-master"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "D:\\Desenvolvimento\\Projetos\\geometria\\"
+        }
+    ]
+}
