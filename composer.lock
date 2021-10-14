@@ -12,10 +12,11 @@
             "dist": {
                 "type": "path",
                 "url": "D:/Desenvolvimento/Projetos/geometria",
-                "reference": "c093d142a3d938cec26d8a9286af7b7fd245855d"
+                "reference": "c046c6eff3b4a609c4fcd035e0b5e73d238e5b99"
             },
             "require": {
-                "php": "8.0.8"
+                "php": "8.0.8",
+                "solidbase/matematica": "dev-master"
             },
             "require-dev": {
                 "phpunit/phpunit": "^9.5"
