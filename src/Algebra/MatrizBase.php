@@ -33,12 +33,12 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
         return $this->NumeroColuna === $this->NumeroLinha;
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset):bool
     {
         return isset($this->matriz[$offset]);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet($offset):mixed
     {
         return $this->matriz[$offset];
     }
@@ -53,7 +53,7 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
         throw new DomainException('Não é possível apagar valores isolados da matriz');
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize():mixed
     {
         return $this->matriz;
     }

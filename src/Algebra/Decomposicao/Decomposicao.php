@@ -14,7 +14,7 @@ abstract class Decomposicao implements ArrayAccess
 
     abstract public function offsetExists($i): bool;
 
-    public function offsetGet($offset)
+    public function offsetGet($offset):mixed
     {
         return $this->{$offset};
     }

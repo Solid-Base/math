@@ -4,7 +4,10 @@
     "autoload": {
         "psr-4": {
             "SolidBase\\Matematica\\": "src/"
-        }
+        },
+        "files": [
+            "src/Aritimetica/funcoes.php"
+        ]
     },
     "authors": [
         {
