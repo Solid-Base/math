@@ -15,7 +15,14 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
 
     public function obtenhaMatriz(): array
     {
-        return $this->matriz;
+        $retorno = [];
+        foreach ($this->matriz as $linha => $valores) {
+            foreach ($valores as $coluna => $valor) {
+                $retorno[$linha][$coluna] = numero($valor)->valor();
+            }
+        }
+
+        return $retorno;
     }
 
     public function obtenhaM(): int
@@ -33,14 +40,18 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
         return $this->NumeroColuna === $this->NumeroLinha;
     }
 
-    public function offsetExists($offset):bool
+    public function offsetExists($offset): bool
     {
         return isset($this->matriz[$offset]);
     }
 
-    public function offsetGet($offset):mixed
+    public function offsetGet($offset): array|float
     {
-        return $this->matriz[$offset];
+        if (is_array($this->matriz[$offset])) {
+            return $this->matriz[$offset];
+        }
+
+        return $this->matriz[$offset]->valor();
     }
 
     public function offsetSet($offset, $value): void
@@ -53,7 +64,7 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
         throw new DomainException('Não é possível apagar valores isolados da matriz');
     }
 
-    public function jsonSerialize():mixed
+    public function jsonSerialize(): mixed
     {
         return $this->matriz;
     }

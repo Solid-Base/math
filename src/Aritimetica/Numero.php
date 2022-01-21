@@ -33,25 +33,25 @@ final class Numero implements Stringable
     public function somar(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $valor = bcadd($this->valor, $direita);
+        $this->valor = bcadd($this->valor, $direita);
 
-        return new self($valor);
+        return $this;
     }
 
     public function subtrair(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $valor = bcsub($this->valor, $direita);
+        $this->valor = bcsub($this->valor, $direita);
 
-        return new self($valor);
+        return $this;
     }
 
     public function multiplicar(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $valor = bcmul($this->valor, $direita);
+        $this->valor = bcmul($this->valor, $direita);
 
-        return new self($valor);
+        return $this;
     }
 
     public function modulo(): self
@@ -66,33 +66,32 @@ final class Numero implements Stringable
     public function dividir(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $valor = bcdiv($this->valor, $direita);
+        $this->valor = bcdiv($this->valor, $direita);
 
-        return new self($valor);
+        return $this;
     }
 
     public function mod(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $valor = bcmod($this->valor, $direita);
+        $this->valor = bcmod($this->valor, $direita);
 
-        return new self($valor);
+        return $this;
     }
 
     public function potencia(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $valor = bcpow($this->valor, $direita);
+        $this->valor = bcpow($this->valor, $direita);
 
-        return new self($valor);
+        return $this;
     }
 
-    public function raiz(int|float|Numero $valor): self
+    public function raiz(): self
     {
-        $direita = $this->converteParaNumero($valor);
-        $valor = bcsqrt($this->valor);
+        $this->valor = bcsqrt($this->valor);
 
-        return new self($valor);
+        return $this;
     }
 
     public function comparar(int|float|Numero $valor): int
@@ -125,7 +124,7 @@ final class Numero implements Stringable
 
     public function InteiroAcima($numero): self
     {
-        if (false !== strpos($numero, '.')) {
+        if (str_contains($numero, '.')) {
             if (preg_match('~\\.[0]+$~', $numero)) {
                 return $this->arredondar(0);
             }
@@ -142,7 +141,7 @@ final class Numero implements Stringable
     public function InteiroAbaixo(): self
     {
         $numero = $this->valor;
-        if (false !== strpos($numero, '.')) {
+        if (str_contains($numero, '.')) {
             if (preg_match('~\\.[0]+$~', $numero)) {
                 return $this->arredondar(0);
             }
@@ -159,7 +158,7 @@ final class Numero implements Stringable
     public function arredondar(int $precisao = 0): self
     {
         $numero = $this->valor;
-        if (false !== strpos($numero, '.')) {
+        if (str_contains($numero, '.')) {
             if ('-' !== $numero[0]) {
                 return new self(bcadd($numero, '0.'.str_repeat('0', $precisao).'5', $precisao));
             }
@@ -183,10 +182,10 @@ final class Numero implements Stringable
     {
         $norm = (string) ($valor);
 
-        if (($e = strrchr($norm, 'E')) === false) {
+        if (($e = mb_strrchr($norm, 'E')) === false) {
             return $norm;
         }
-        $decimal = (-(int) (substr($e, 1))) < 0 ? 0 : (-(int) (substr($e, 1)));
+        $decimal = (-(int) (mb_substr($e, 1))) < 0 ? 0 : (-(int) (mb_substr($e, 1)));
 
         return number_format($valor, $decimal, '.', '');
     }

@@ -55,7 +55,7 @@ class Shield
 
         foreach ($matriz as $key => $linha) {
             $soma = array_reduce($linha, fn (float $total, float $n) => $total + abs($n), 0);
-            if (abs($soma) < 1E-9) {
+            if (eZero($soma)) {
                 unset($matriz[$key]);
             }
         }

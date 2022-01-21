@@ -13,6 +13,7 @@ class LU extends Decomposicao
 {
     private int $trocas;
     private static int $trocasAux;
+
     private function __construct(
         private Matriz $L,
         private Matriz $U,
@@ -22,7 +23,7 @@ class LU extends Decomposicao
 
     public static function Decompor(Matriz $M): self
     {
-        self::$trocasAux=0;
+        self::$trocasAux = 0;
         if (!$M->eQuadrada()) {
             throw new DomainException('Para fatoração LU, é necessário que a matriz seja de ordem quadrada.');
         }
@@ -35,24 +36,25 @@ class LU extends Decomposicao
 
         for ($i = 0; $i < $n; ++$i) {
             for ($j = 0; $j <= $i; ++$j) {
-                $soma = 0;
+                $soma = numero(0);
                 for ($k = 0; $k < $j; ++$k) {
-                    $soma += $U[$k][$i] * $L[$j][$k];
+                    $soma->somar(multiplicar($U[$k][$i], $L[$j][$k]));
                 }
-                $U[$j][$i] = $PA[$j][$i] - $soma;
+                $U[$j][$i] = subtrair($PA[$j][$i], $soma);
             }
 
             for ($j = $i; $j < $n; ++$j) {
-                $soma = 0;
+                $soma = numero(0);
                 for ($k = 0; $k < $i; ++$k) {
-                    $soma += $U[$k][$i] * $L[$j][$k];
+                    $soma->somar(multiplicar($U[$k][$i], $L[$j][$k]));
                 }
-                $L[$j][$i] = (0 === $U[$i][$i]) ? NAN : ($PA[$j][$i] - $soma) / $U[$i][$i];
+                $L[$j][$i] = (eZero($U[$i][$i])) ? NAN : (numero($PA[$j][$i])->subtrair($soma)->dividir($U[$i][$i]));
             }
         }
 
-        $retorno= new self(FabricaMatriz::Criar($L), FabricaMatriz::Criar($U), $P);
-        $retorno->trocas=self::$trocasAux;
+        $retorno = new self(FabricaMatriz::Criar($L), FabricaMatriz::Criar($U), $P);
+        $retorno->trocas = self::$trocasAux;
+
         return $retorno;
     }
 
@@ -71,7 +73,7 @@ class LU extends Decomposicao
 
     public function ResolverSistema(Matriz $B): Matriz
     {
-        if (abs($this->Determinante()) <= 1E-10) {
+        if (eZero($this->Determinante())) {
             throw new DomainException('O sistema não possui solução!');
         }
 
@@ -81,26 +83,26 @@ class LU extends Decomposicao
         $m = $L->obtenhaM();
         $Pb = $P->Multiplicar($B);
         $y = [];
-        $y[0] = $Pb[0][0] / $L[0][0];
+        $y[0] = dividir($Pb[0][0], $L[0][0]);
         for ($i = 1; $i < $m; ++$i) {
-            $soma = 0;
+            $soma = numero(0);
             for ($j = 0; $j <= $i - 1; ++$j) {
-                $soma += $L[$i][$j] * $y[$j];
+                $soma->somar(multiplicar($L[$i][$j], $y[$j]));
             }
-            $y[$i] = ($Pb[$i][0] - $soma) / $L[$i][$i];
+            $y[$i] = subtrair($Pb[$i][0], $soma)->dividir($L[$i][$i]);
         }
 
         $x = [];
-        $x[$m - 1] = $y[$m - 1] / $U[$m - 1][$m - 1];
+        $x[$m - 1] = dividir($y[$m - 1], $U[$m - 1][$m - 1]);
         for ($i = $m - 2; $i >= 0; --$i) {
-            $soma = 0;
+            $soma = numero(0);
             for ($j = $i + 1; $j < $m; ++$j) {
-                $soma += $U[$i][$j] * $x[$j];
+                $soma->somar(multiplicar($U[$i][$j], $x[$j]));
             }
-            if (abs($U[$i][$i]) < 1E-6) {
+            if (eZero($U[$i][$i])) {
                 throw new ArithmeticError('Não é possível solucionar o sistema.');
             }
-            $x[$i] = ($y[$i] - $soma) / $U[$i][$i];
+            $x[$i] = subtrair($y[$i], $soma)->dividir($U[$i][$i]);
         }
 
         return FabricaMatriz::Criar(array_reverse($x));
@@ -109,14 +111,13 @@ class LU extends Decomposicao
     public function Determinante(): float
     {
         $u = $this->U;
-        $det = 1;
+        $det = numero(1);
         $trocas = $this->trocas;
         for ($i = 0; $i < $u->obtenhaM(); ++$i) {
-            $det *= $u[$i][$i];
+            $det = multiplicar($det, $u[$i][$i]);
         }
-        $det *= (-1) ** $trocas;
 
-        return $det;
+        return multiplicar($det, (-1) ** $trocas)->valor();
     }
 
     protected static function Pivotiar(Matriz $A): Matriz
@@ -124,11 +125,11 @@ class LU extends Decomposicao
         $n = $A->obtenhaN();
         $P = FabricaMatriz::Identidade($n);
         for ($i = 0; $i < $n; ++$i) {
-            $max = abs($A[$i][$i]);
+            $max = abs($A[$i][$i]->valor());
             $linha = $i;
             for ($j = $i; $j < $n; ++$j) {
-                if (abs($A[$j][$i]) > $max) {
-                    $max = abs($A[$j][$i]);
+                if (abs($A[$j][$i]->valor()) > $max) {
+                    $max = abs($A[$j][$i]->valor());
                     $linha = $j;
                 }
             }
@@ -139,5 +140,5 @@ class LU extends Decomposicao
         }
 
         return $P;
-    }   
+    }
 }

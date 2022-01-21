@@ -6,6 +6,7 @@ namespace SolidBase\Matematica\Algebra;
 
 use DomainException;
 use InvalidArgumentException;
+use SolidBase\Matematica\Aritimetica\Numero;
 use SolidBase\Matematica\Excecao\ExcecaoColunaNaoExiste;
 
 class Matriz extends MatrizBase
@@ -33,7 +34,7 @@ class Matriz extends MatrizBase
         }
         $j = $this->NumeroColuna;
         for ($i = 0; $i < \count($coluna); ++$i) {
-            $this->matriz[$i][$j] = $coluna[$i];
+            $this->matriz[$i][$j] = numero($coluna[$i]);
         }
         ++$this->NumeroColuna;
     }
@@ -43,14 +44,17 @@ class Matriz extends MatrizBase
         if (\count($linha) !== $this->NumeroColuna) {
             throw new DomainException('Para adicionar uma linha, a mesma deve ter o mesmo numero de colunas que a matriz');
         }
-        $this->matriz[$this->NumeroLinha] = $linha;
+        $this->matriz[$this->NumeroLinha] = array_map(fn (mixed $n) => numero($n), $linha);
         ++$this->NumeroLinha;
     }
 
-    public function Item(int $i, $j): float
+    public function Item(int $i, $j, $real = true): float|Numero
     {
         if (!isset($this->matriz[$i]) || !isset($this->matriz[$i][$j])) {
             throw new InvalidArgumentException('Não existe o item solicitado');
+        }
+        if ($real) {
+            return $this->matriz[$i][$j]->valor();
         }
 
         return $this->matriz[$i][$j];
@@ -58,7 +62,7 @@ class Matriz extends MatrizBase
 
     public function obtenhaLinha($i): array
     {
-        return $this->matriz[$i];
+        return array_map(fn (Numero $n) => $n->valor(), $this->matriz[$i]);
     }
 
     public function obtenhaColuna($j): array
@@ -68,7 +72,7 @@ class Matriz extends MatrizBase
         }
         $retorno = [];
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
-            $retorno[$i][0] = $this->matriz[$i][$j];
+            $retorno[$i][0] = $this->matriz[$i][$j]->valor();
         }
 
         return $retorno;
@@ -80,7 +84,7 @@ class Matriz extends MatrizBase
             throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
         }
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
-            $this->matriz[$i][$j] = $valor[$i][0];
+            $this->matriz[$i][$j] = numero($valor[$i][0]);
         }
     }
 
@@ -92,7 +96,7 @@ class Matriz extends MatrizBase
         $matrizSoma = [];
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $this->NumeroColuna; ++$j) {
-                $matrizSoma[$i][$j] = $this->Item($i, $j) + $matriz->Item($i, $j);
+                $matrizSoma[$i][$j] = somar($this->Item($i, $j, false), ($matriz->Item($i, $j)));
             }
         }
 
@@ -107,9 +111,9 @@ class Matriz extends MatrizBase
         $matrizMultiplicacao = [];
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $matriz->NumeroColuna; ++$j) {
-                $soma = 0;
+                $soma = numero(0);
                 for ($k = 0; $k < $matriz->NumeroLinha; ++$k) {
-                    $soma += $this->Item($i, $k) * $matriz->Item($k, $j);
+                    $soma->somar(multiplicar($this->Item($i, $k), $matriz->Item($k, $j)));
                 }
                 $matrizMultiplicacao[$i][$j] = $soma;
             }
@@ -118,12 +122,12 @@ class Matriz extends MatrizBase
         return new self($matrizMultiplicacao);
     }
 
-    public function Escalar(float $escala): self
+    public function Escalar(float|Numero $escala): self
     {
         $matriz = [];
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $this->NumeroColuna; ++$j) {
-                $matriz[$i][$j] = $this->matriz[$i][$j] * $escala;
+                $matriz[$i][$j] = multiplicar($this->matriz[$i][$j], $escala);
             }
         }
 
@@ -163,14 +167,15 @@ class Matriz extends MatrizBase
         return new self($matriz);
     }
 
-    private function adicionarItem(int $i, int $j, float $valor): void
+    private function adicionarItem(int $i, int $j, int|Numero|float $valor): void
     {
-        $this->matriz[$i][$j] = $valor;
+        $numero = numero($valor);
+        $this->matriz[$i][$j] = $numero;
     }
 
     private function informarLinha(int $i, array $valor): void
     {
-        $this->matriz[$i] = $valor;
+        $this->matriz[$i] = array_map(fn (float|Numero|int $n) => numero($n), $valor);
     }
 
     private function matrizEMesmaOrdem(self $matriz)

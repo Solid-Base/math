@@ -4,60 +4,12 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b6569c00c582994318d27810d14cb8f5",
-    "packages": [
-        {
-            "name": "solidbase/geometria",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "D:/Desenvolvimento/Projetos/geometria",
-                "reference": "c046c6eff3b4a609c4fcd035e0b5e73d238e5b99"
-            },
-            "require": {
-                "php": "8.0.8",
-                "solidbase/matematica": "dev-master"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^9.5"
-            },
-            "type": "packpage",
-            "autoload": {
-                "psr-4": {
-                    "Solidbase\\Geometria\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "start": [
-                    "php -S api.solidbase:8080 -t public"
-                ],
-                "test": [
-                    "phpunit"
-                ]
-            },
-            "authors": [
-                {
-                    "name": "Guilherme Luiz",
-                    "email": "guilherme@solidbase.com.br"
-                }
-            ],
-            "description": "M\u0000dulo de Geometria do SolidBase",
-            "transport-options": {
-                "relative": false
-            }
-        }
-    ],
+    "content-hash": "e5eb86ea367bfa9a6727496dbdf4e736",
+    "packages": [],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "solidbase/geometria": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

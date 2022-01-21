@@ -7,16 +7,22 @@ use SolidBase\Matematica\Aritimetica\Numero;
 if (!function_exists('somar')) {
     function somar(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->somar($valor2);
+    }
+}
+if (!function_exists('numero')) {
+    function numero(int|float|Numero $valor): Numero
+    {
+        return is_a($valor, Numero::class) ? clone $valor : new Numero($valor);
     }
 }
 
 if (!function_exists('subtrair')) {
     function subtrair(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->subtrair($valor2);
     }
@@ -25,7 +31,7 @@ if (!function_exists('subtrair')) {
 if (!function_exists('multiplicar')) {
     function multiplicar(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->multiplicar($valor2);
     }
@@ -34,7 +40,7 @@ if (!function_exists('multiplicar')) {
 if (!function_exists('dividir')) {
     function dividir(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->dividir($valor2);
     }
@@ -42,7 +48,7 @@ if (!function_exists('dividir')) {
 if (!function_exists('modulo')) {
     function modulo(int|float|Numero $valor): Numero
     {
-        $numero = is_a($valor, Numero::class) ? $valor : new Numero($valor);
+        $numero = numero($valor);
 
         return $numero->modulo();
     }
@@ -50,7 +56,7 @@ if (!function_exists('modulo')) {
 if (!function_exists('mod')) {
     function mod(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->mod($valor2);
     }
@@ -75,7 +81,7 @@ if (!function_exists('eZero')) {
 if (!function_exists('potencia')) {
     function potencia(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->potencia($valor2);
     }
@@ -111,10 +117,10 @@ if (!function_exists('comparar')) {
 if (!function_exists('fatorial')) {
     function fatorial(int|Numero $numero): Numero
     {
-        $fatorial = is_a($numero, Numero::class) ? $numero->subtrair(1) : new Numero($numero--);
+        $fatorial = numero($numero);
 
         while ($numero > 1) {
-            $fatorial = $fatorial->multiplicar($numero--);
+            $fatorial->multiplicar(--$numero);
         }
 
         return $fatorial;
@@ -124,93 +130,20 @@ if (!function_exists('fatorial')) {
 if (!function_exists('seno')) {
     function seno(float $angulo): Numero
     {
-        $escala = bcscale();
-        if ($escala < 35) {
-            bcscale(35);
-        }
-        $or = $angulo;
-        $r = subtrair($angulo, dividir(potencia($angulo, 3), 6));
-        $i = 2;
-        while (subtrair($or, $r)->modulo()->eMaior(1E-100)) {
-            $or = $r;
-
-            switch ($i % 2) {
-                case 0:
-                    $r = somar($r, dividir(potencia($angulo, $i * 2 + 1), fatorial($i * 2 + 1)));
-
-                    break;
-
-                    default:
-                    $r = subtrair($r, dividir(potencia($angulo, $i * 2 + 1), fatorial($i * 2 + 1)));
-
-                    break;
-            }
-            ++$i;
-        }
-
-        bcscale($escala);
-        if ($r->modulo()->eMenor(1E-10)) {
-            return new Numero(0);
-        }
-
-        return $r->arredondar(20);
+        return numero(sin($angulo));
     }
 }
 
 if (!function_exists('cosseno')) {
     function cosseno(float $angulo): Numero
     {
-        $escala = bcscale();
-        if ($escala < 35) {
-            bcscale(35);
-        }
-        $or = $angulo;
-        $r = subtrair(1, dividir(potencia($angulo, 2), 2));
-        $i = 2;
-        while (subtrair($or, $r)->modulo()->eMaior(1E-100)) {
-            $or = $r;
-
-            switch ($i % 2) {
-                case 0:
-                    $r = somar($r, dividir(potencia($angulo, $i * 2), fatorial($i * 2)));
-
-                    break;
-
-                    default:
-                    $r = subtrair($r, dividir(potencia($angulo, $i * 2), fatorial($i * 2)));
-
-                    break;
-            }
-            ++$i;
-        }
-
-        bcscale($escala);
-        if ($r->modulo()->eMenor(1E-10)) {
-            return new Numero(0);
-        }
-
-        return $r->arredondar(20);
+        return numero(cos($angulo));
     }
 }
 
 if (!function_exists('tangente')) {
     function tangente(float|Numero $angulo): Numero
     {
-        $numero = is_a($angulo, Numero::class) ? $angulo : new Numero($angulo);
-        if ($numero->eIgual(M_PI_2) || $numero->eIgual(M_PI_2 * 2)) {
-            return new Numero(1.6331239353195E+16);
-        }
-        $escala = bcscale();
-        if ($escala < 35) {
-            bcscale(35);
-        }
-
-        $r = seno($angulo)->dividir(cosseno($angulo));
-        bcscale($escala);
-        if ($r->modulo()->eMenor(1E-10)) {
-            return new Numero(0);
-        }
-
-        return $r->arredondar(20);
+        return numero(tan($angulo));
     }
 }

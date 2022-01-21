@@ -10,8 +10,6 @@ use SolidBase\Matematica\Algebra\Decomposicao\LU;
 
 class MatrizInversa
 {
-    public const PRECISAO = 1E-10;
-
     public static function Inverter(Matriz $matriz): Matriz
     {
         if (!$matriz->eQuadrada()) {
@@ -19,7 +17,7 @@ class MatrizInversa
         }
         $ordem = $matriz->obtenhaN();
         $decomposicao = LU::Decompor($matriz);
-        if ($decomposicao->Determinante() <= self::PRECISAO) {
+        if (eZero($decomposicao->Determinante())) {
             throw new ArithmeticError('Não é possível inverter a matriz');
         }
         $identidade = FabricaMatriz::Identidade($ordem);
