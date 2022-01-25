@@ -74,7 +74,10 @@ if (!function_exists('eIgual')) {
 if (!function_exists('eZero')) {
     function eZero(int|float|Numero $valor): bool
     {
-        return eIgual($valor, 0);
+        $numero = numero($valor);
+        $numero = $numero->arredondar(bcscale() - 1);
+
+        return eIgual(${$numero}, 0);
     }
 }
 
