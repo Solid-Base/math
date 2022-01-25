@@ -127,6 +127,15 @@ if (!function_exists('fatorial')) {
     }
 }
 
+if (!function_exists('raiz')) {
+    function raiz(float|int|Numero $numero): Numero
+    {
+        $numero = numero($numero);
+
+        return $numero->raiz();
+    }
+}
+
 if (!function_exists('seno')) {
     function seno(float $angulo): Numero
     {
