@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 use SolidBase\Matematica\Aritimetica\Numero;
 
+if (!defined('PRECISAO_SOLIDBASE')) {
+    $scale = 0 === bcscale() ? 20 : bcscale();
+    $precisao = (int) min($scale / 2, 9);
+    define('PRECISAO_SOLIDBASE', 1 / (10 ** $precisao));
+    bcscale($scale);
+}
 if (!function_exists('somar')) {
     function somar(int|float|Numero $valor1, int|float|Numero $valor2): Numero
     {
@@ -74,10 +80,28 @@ if (!function_exists('eIgual')) {
 if (!function_exists('eZero')) {
     function eZero(int|float|Numero $valor): bool
     {
-        $numero = numero($valor);
-        $numero = $numero->arredondar(bcscale() - 1);
+        return entre(-PRECISAO_SOLIDBASE, $valor, PRECISAO_SOLIDBASE);
+    }
+}
 
-        return eIgual(${$numero}, 0);
+if (!function_exists('entre')) {
+    function entre(
+        int|float|Numero $valorEsquerda,
+        int|float|Numero $valorComparacao,
+        int|float|Numero $valorDireita
+    ): bool {
+        $valorEsquerda = numero($valorEsquerda);
+        $valorDireita = numero($valorDireita);
+        $valorComparacao = numero($valorComparacao);
+
+        if (eMaior($valorEsquerda, $valorComparacao)) {
+            return false;
+        }
+        if (eMenor($valorDireita, $valorComparacao)) {
+            return false;
+        }
+
+        return true;
     }
 }
 
@@ -93,7 +117,7 @@ if (!function_exists('potencia')) {
 if (!function_exists('eMenor')) {
     function eMenor(int|float|Numero $valor1, int|float|Numero $valor2): bool
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->eMenor($valor2);
     }
@@ -102,7 +126,7 @@ if (!function_exists('eMenor')) {
 if (!function_exists('eMaior')) {
     function eMaior(int|float|Numero $valor1, int|float|Numero $valor2): bool
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
+        $numero = numero($valor1);
 
         return $numero->eMaior($valor2);
     }
