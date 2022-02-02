@@ -83,7 +83,15 @@ if (!function_exists('eZero')) {
         return entre(-PRECISAO_SOLIDBASE, $valor, PRECISAO_SOLIDBASE);
     }
 }
+if (!function_exists('arredondar')) {
+    function arredondar(int|float|Numero $numero, int $casas): float
+    {
+        $numero = numero($numero);
+        $numero = $numero->arredondar($casas);
 
+        return $numero->valor();
+    }
+}
 if (!function_exists('entre')) {
     function entre(
         int|float|Numero $valorEsquerda,
