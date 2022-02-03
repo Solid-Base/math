@@ -10,12 +10,14 @@ use Stringable;
 final class Numero implements Stringable
 {
     private string $valor;
+    private int $precisao;
 
-    public function __construct(int|float|string $numero = 0)
+    public function __construct(int|float|string $numero = 0, ?int $precisao = null)
     {
         if (!is_numeric($numero)) {
             throw new DomainException('Não é um numero válido');
         }
+        $this->precisao = $precisao ?? bcscale();
 
         $this->valor = \is_string($numero) ? $numero : $this->converteFloat($numero);
     }
@@ -33,7 +35,7 @@ final class Numero implements Stringable
     public function somar(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcadd($this->valor, $direita);
+        $this->valor = bcadd($this->valor, $direita, $this->precisao);
 
         return $this;
     }
@@ -41,7 +43,7 @@ final class Numero implements Stringable
     public function subtrair(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcsub($this->valor, $direita);
+        $this->valor = bcsub($this->valor, $direita, $this->precisao);
 
         return $this;
     }
@@ -49,7 +51,7 @@ final class Numero implements Stringable
     public function multiplicar(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcmul($this->valor, $direita);
+        $this->valor = bcmul($this->valor, $direita, $this->precisao);
 
         return $this;
     }
@@ -60,13 +62,13 @@ final class Numero implements Stringable
             return $this->multiplicar(-1);
         }
 
-        return new self($this->valor);
+        return new self($this->valor, $this->precisao);
     }
 
     public function dividir(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcdiv($this->valor, $direita);
+        $this->valor = bcdiv($this->valor, $direita, $this->precisao);
 
         return $this;
     }
@@ -74,7 +76,7 @@ final class Numero implements Stringable
     public function mod(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcmod($this->valor, $direita);
+        $this->valor = bcmod($this->valor, $direita, $this->precisao);
 
         return $this;
     }
@@ -82,14 +84,14 @@ final class Numero implements Stringable
     public function potencia(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcpow($this->valor, $direita);
+        $this->valor = bcpow($this->valor, $direita, $this->precisao);
 
         return $this;
     }
 
     public function raiz(): self
     {
-        $this->valor = bcsqrt($this->valor);
+        $this->valor = bcsqrt($this->valor, $this->precisao);
 
         return $this;
     }
@@ -98,28 +100,28 @@ final class Numero implements Stringable
     {
         $direita = $this->converteParaNumero($valor);
 
-        return bccomp($this->valor, $direita);
+        return bccomp($this->valor, $direita, $this->precisao);
     }
 
     public function eIgual(int|float|Numero $valor): bool
     {
         $direita = $this->converteParaNumero($valor);
 
-        return 0 === bccomp($this->valor, $direita);
+        return 0 === bccomp($this->valor, $direita, $this->precisao);
     }
 
     public function eMaior(int|float|Numero $valor): bool
     {
         $direita = $this->converteParaNumero($valor);
 
-        return 1 === bccomp($this->valor, $direita);
+        return 1 === bccomp($this->valor, $direita, $this->precisao);
     }
 
     public function eMenor(int|float|Numero $valor): bool
     {
         $direita = $this->converteParaNumero($valor);
 
-        return -1 === bccomp($this->valor, $direita);
+        return -1 === bccomp($this->valor, $direita, $this->precisao);
     }
 
     public function InteiroAcima($numero): self
@@ -129,13 +131,13 @@ final class Numero implements Stringable
                 return $this->arredondar(0);
             }
             if ('-' !== $numero[0]) {
-                return new self(bcadd($numero, '1', 0));
+                return new self(bcadd($numero, '1', 0), $this->precisao);
             }
 
-            return new self(bcsub($numero, '0', 0));
+            return new self(bcsub($numero, '0', 0), $this->precisao);
         }
 
-        return new self($numero);
+        return new self($numero, $this->precisao);
     }
 
     public function InteiroAbaixo(): self
@@ -146,13 +148,13 @@ final class Numero implements Stringable
                 return $this->arredondar(0);
             }
             if ('-' !== $numero[0]) {
-                return new self(bcadd($numero, '0', 0));
+                return new self(bcadd($numero, '0', 0), $this->precisao);
             }
 
-            return new self(bcsub($numero, '1', 0));
+            return new self(bcsub($numero, '1', 0), $this->precisao);
         }
 
-        return new self($numero);
+        return new self($numero, $this->precisao);
     }
 
     public function arredondar(int $precisao = 0): self
@@ -160,13 +162,13 @@ final class Numero implements Stringable
         $numero = $this->valor;
         if (str_contains($numero, '.')) {
             if ('-' !== $numero[0]) {
-                return new self(bcadd($numero, '0.'.str_repeat('0', $precisao).'5', $precisao));
+                return new self(bcadd($numero, '0.'.str_repeat('0', $precisao).'5', $precisao), $this->precisao);
             }
 
-            return new self(bcsub($numero, '0.'.str_repeat('0', $precisao).'5', $precisao));
+            return new self(bcsub($numero, '0.'.str_repeat('0', $precisao).'5', $precisao), $this->precisao);
         }
 
-        return new self($numero);
+        return new self($numero, $this->precisao);
     }
 
     private function converteParaNumero(int|float|Numero $valor): string
