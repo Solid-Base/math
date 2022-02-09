@@ -17,10 +17,10 @@ final class Numero implements Stringable
         if (!is_numeric($numero)) {
             throw new DomainException('Não é um numero válido');
         }
-        $precisaoBc = $this->obtenhaBcPrecisao($this->converteFloat($numero));
+        $valor = $this->converteFloat($numero);
+        $precisaoBc = $this->obtenhaBcPrecisao($valor);
         $this->precisao = $precisao ?? max($precisaoBc, bcscale());
-
-        $this->valor = $this->converteFloat($numero);
+        $this->valor = $valor;
     }
 
     public function __toString(): string
@@ -161,24 +161,21 @@ final class Numero implements Stringable
 
     public function inteiro(): self
     {
-        $valor = round($this->valor(), 0);
-
-        return new self($valor, 0);
+        return $this->arredondar(0);
     }
 
     public function arredondar(int $precisao = 0): self
     {
         $numero = $this->valor;
         $precisao = $precisao < 0 ? 0 : $precisao;
-        if (0 == strcmp(bcadd($numero, '0', $precisao), bcadd($numero, '0', $precisao + 1))) {
-            return new self(bcadd($numero, '0', $precisao));
+        $precisaoTotal = $this->obtenhaBcPrecisao($numero);
+        while ($precisaoTotal >= $precisao) {
+            $t = '0.'.str_repeat('0', $precisaoTotal).'5';
+            $numero = (float) $numero < 0 ? bcsub($numero, $t, $precisaoTotal) : bcadd($numero, $t, $precisaoTotal);
+            --$precisaoTotal;
         }
-        if ($this->obtenhaBcPrecisao($numero) - $precisao > 1) {
-            return $this->arredondar($precisao + 1);
-        }
-        $t = '0.'.str_repeat('0', $precisao).'5';
 
-        return (float) $numero < 0 ? new self(bcsub($numero, $t, $precisao), $precisao) : new self(bcadd($numero, $t, $precisao), $precisao);
+        return new self($numero, $precisao);
     }
 
     private function obtenhaBcPrecisao(string $numero): int
@@ -202,7 +199,7 @@ final class Numero implements Stringable
 
     private function converteFloat(int|float|string $valor): string
     {
-        if (is_string($valor)) {
+        if (is_string($valor) && false === mb_strrchr($valor, 'E')) {
             return $valor;
         }
         $norm = (string) ($valor);
@@ -212,7 +209,7 @@ final class Numero implements Stringable
         }
         $decimal = (-(int) (mb_substr($e, 1))) < 0 ? 0 : (-(int) (mb_substr($e, 1)));
 
-        return number_format($valor, $decimal, '.', '');
+        return number_format((float) $valor, $decimal, '.', '');
     }
 
     private function removeFloatStringZeros(): string

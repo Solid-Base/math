@@ -200,11 +200,26 @@ class Matriz extends MatrizBase
         return $this->precisao;
     }
 
+    public function eIdentidade(): bool
+    {
+        if (!$this->eQuadrada()) {
+            return false;
+        }
+        $t = $this->obtenhaN();
+        for ($i = 0; $i < $t; ++$i) {
+            if (!$this->Item($i, $i, false)->eIgual(1)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     private function adicionarItem(int $i, int $j, int|string|Numero|float $valor): void
     {
         $numero = numero($valor, $this->precisao);
         $this->precisao = max($this->precisao, $numero->precisao);
-        $numero = eInteiro($numero) ? numero($numero->inteiro(),$this->precisao) : $numero;
+        $numero = eInteiro($numero) ? numero($numero->inteiro(), $this->precisao) : $numero;
         $this->matriz[$i][$j] = $numero;
     }
 
