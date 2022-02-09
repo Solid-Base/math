@@ -11,8 +11,11 @@ use SolidBase\Matematica\Excecao\ExcecaoColunaNaoExiste;
 
 class Matriz extends MatrizBase
 {
+    private int $precisao;
+
     public function __construct(array $matriz)
     {
+        $this->precisao = bcscale();
         $this->NumeroLinha = \count($matriz);
         $this->NumeroColuna = \is_array($matriz[0]) ? \count($matriz[0]) : 1;
         foreach ($matriz as $i => $linha) {
@@ -34,7 +37,7 @@ class Matriz extends MatrizBase
         }
         $j = $this->NumeroColuna;
         for ($i = 0; $i < \count($coluna); ++$i) {
-            $this->matriz[$i][$j] = numero($coluna[$i]);
+            $this->adicionarItem($i, $j, $coluna[$i]);
         }
         ++$this->NumeroColuna;
     }
@@ -94,13 +97,17 @@ class Matriz extends MatrizBase
             throw new DomainException('Para somar duas matrizes, é necessário que as mesmas possuem a mesma ordem');
         }
         $matrizSoma = [];
+        $precisao = max($this->precisao, $matriz->precisao);
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $this->NumeroColuna; ++$j) {
                 $matrizSoma[$i][$j] = somar($this->Item($i, $j, false), ($matriz->Item($i, $j)));
             }
         }
 
-        return new self($matrizSoma);
+        $retorno = new self($matrizSoma);
+        $retorno->precisao = $precisao;
+
+        return $retorno;
     }
 
     public function Multiplicar(self $matriz): self
@@ -109,17 +116,22 @@ class Matriz extends MatrizBase
             throw new DomainException('Para multiplicar matrizes, a primeira matriz deve ter o numero de colunas igual ao da segunda.');
         }
         $matrizMultiplicacao = [];
+        $precisaoMultiplicacao = $this->precisao * $matriz->precisao;
+        $precisaoRetorno = max($matriz->precisao, $this->precisao);
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $matriz->NumeroColuna; ++$j) {
-                $soma = numero(0);
+                $soma = numero(0, $precisaoMultiplicacao);
                 for ($k = 0; $k < $matriz->NumeroLinha; ++$k) {
                     $soma->somar(multiplicar($this->Item($i, $k), $matriz->Item($k, $j)));
                 }
-                $matrizMultiplicacao[$i][$j] = $soma;
+                $matrizMultiplicacao[$i][$j] = eZero($soma) ? numero(0, $precisaoRetorno) : arredondar($soma, $precisaoRetorno);
             }
         }
 
-        return new self($matrizMultiplicacao);
+        $retorno = new self($matrizMultiplicacao);
+        $retorno->precisao = $precisaoRetorno;
+
+        return $retorno;
     }
 
     public function Escalar(float|Numero $escala): self
@@ -131,7 +143,10 @@ class Matriz extends MatrizBase
             }
         }
 
-        return new self($matriz);
+        $retorno = new self($matriz);
+        $retorno->precisao = $this->precisao;
+
+        return $retorno;
     }
 
     public static function Identidade(float $n): self
@@ -164,12 +179,32 @@ class Matriz extends MatrizBase
             }
         }
 
-        return new self($matriz);
+        $retorno = new self($matriz);
+        $retorno->precisao = $this->precisao;
+
+        return $retorno;
     }
 
-    private function adicionarItem(int $i, int $j, int|Numero|float $valor): void
+    /**
+     * Informar o valor precisao.
+     */
+    public function informarPrecisao(int $precisao): self
     {
-        $numero = numero($valor);
+        $this->precisao = $precisao;
+
+        return $this;
+    }
+
+    public function obtenhaPrecisao(): int
+    {
+        return $this->precisao;
+    }
+
+    private function adicionarItem(int $i, int $j, int|string|Numero|float $valor): void
+    {
+        $numero = numero($valor, $this->precisao);
+        $this->precisao = max($this->precisao, $numero->precisao);
+        $numero = eInteiro($numero) ? numero($numero->inteiro(),$this->precisao) : $numero;
         $this->matriz[$i][$j] = $numero;
     }
 

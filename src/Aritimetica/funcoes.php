@@ -17,7 +17,7 @@ if (!defined('ZERO_SOLIDBASE')) {
 }
 
 if (!function_exists('somar')) {
-    function somar(int|float|Numero $valor1, int|float|Numero $valor2): Numero
+    function somar(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
     {
         $numero = numero($valor1);
 
@@ -25,14 +25,16 @@ if (!function_exists('somar')) {
     }
 }
 if (!function_exists('numero')) {
-    function numero(int|float|string|Numero $valor): Numero
+    function numero(int|float|string|Numero $valor, ?int $precisao = null): Numero
     {
-        return is_a($valor, Numero::class) ? clone $valor : new Numero($valor);
+        $precisao ??= is_a($valor, Numero::class) ? $valor->precisao : $precisao;
+
+        return is_a($valor, Numero::class) ? new Numero((string) $valor, $precisao) : new Numero($valor, $precisao);
     }
 }
 
 if (!function_exists('subtrair')) {
-    function subtrair(int|float|Numero $valor1, int|float|Numero $valor2): Numero
+    function subtrair(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
     {
         $numero = numero($valor1);
 
@@ -41,7 +43,7 @@ if (!function_exists('subtrair')) {
 }
 
 if (!function_exists('multiplicar')) {
-    function multiplicar(int|float|Numero $valor1, int|float|Numero $valor2): Numero
+    function multiplicar(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
     {
         $numero = numero($valor1);
 
@@ -50,15 +52,27 @@ if (!function_exists('multiplicar')) {
 }
 
 if (!function_exists('dividir')) {
-    function dividir(int|float|Numero $valor1, int|float|Numero $valor2): Numero
+    function dividir(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
     {
         $numero = numero($valor1);
 
         return $numero->dividir($valor2);
     }
 }
+
+if (!function_exists('eInteiro')) {
+    function eInteiro(int|string|float|Numero $valor): bool
+    {
+        $numeroAbaixo = numero($valor);
+        $numeroAcima = numero($valor);
+        $valorAbaixo = $numeroAbaixo->InteiroAbaixo();
+        $valorAcima = $numeroAcima->InteiroAcima();
+
+        return eZero($numeroAbaixo->subtrair($valorAbaixo)) || eZero($numeroAcima->subtrair($valorAcima));
+    }
+}
 if (!function_exists('modulo')) {
-    function modulo(int|float|Numero $valor): Numero
+    function modulo(int|string|float|Numero $valor): Numero
     {
         $numero = numero($valor);
 
@@ -66,7 +80,7 @@ if (!function_exists('modulo')) {
     }
 }
 if (!function_exists('mod')) {
-    function mod(int|float|Numero $valor1, int|float|Numero $valor2): Numero
+    function mod(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
     {
         $numero = numero($valor1);
 
@@ -75,7 +89,7 @@ if (!function_exists('mod')) {
 }
 
 if (!function_exists('eIgual')) {
-    function eIgual(int|float|Numero $valor1, int|float|Numero $valor2): bool
+    function eIgual(int|string|float|Numero $valor1, int|string|float|Numero $valor2): bool
     {
         $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
 
@@ -84,25 +98,26 @@ if (!function_exists('eIgual')) {
 }
 
 if (!function_exists('eZero')) {
-    function eZero(int|float|Numero $valor): bool
+    function eZero(int|string|float|Numero $valor): bool
     {
-        return entre(-ZERO_SOLIDBASE, $valor, ZERO_SOLIDBASE);
+        $precisao = is_a($valor, Numero::class) ? $valor->precisao : bcscale();
+
+        return entre(-ZERO_SOLIDBASE, arredondar($valor, $precisao), ZERO_SOLIDBASE);
     }
 }
 if (!function_exists('arredondar')) {
-    function arredondar(int|float|Numero $numero, int $casas): float
+    function arredondar(int|float|string|Numero $numero, int $casas): Numero
     {
         $numero = numero($numero);
-        $numero = $numero->arredondar($casas);
 
-        return $numero->valor();
+        return $numero->arredondar($casas);
     }
 }
 if (!function_exists('entre')) {
     function entre(
-        int|float|Numero $valorEsquerda,
-        int|float|Numero $valorComparacao,
-        int|float|Numero $valorDireita
+        int|string|float|Numero $valorEsquerda,
+        int|string|float|Numero $valorComparacao,
+        int|string|float|Numero $valorDireita
     ): bool {
         $valorEsquerda = numero($valorEsquerda);
         $valorDireita = numero($valorDireita);
@@ -120,16 +135,17 @@ if (!function_exists('entre')) {
 }
 
 if (!function_exists('potencia')) {
-    function potencia(int|float|Numero $valor1, int|float|Numero $valor2): Numero
+    function potencia(int|float|string|Numero $valor1, int|Numero $valor2): Numero
     {
+        $pontecia = arredondar($valor2, 0)->valor();
         $numero = numero($valor1);
 
-        return $numero->potencia($valor2);
+        return $numero->potencia($pontecia);
     }
 }
 
 if (!function_exists('eMenor')) {
-    function eMenor(int|float|Numero $valor1, int|float|Numero $valor2): bool
+    function eMenor(int|float|string|Numero $valor1, int|float|string|Numero $valor2): bool
     {
         $numero = numero($valor1);
 
@@ -138,7 +154,7 @@ if (!function_exists('eMenor')) {
 }
 
 if (!function_exists('eMaior')) {
-    function eMaior(int|float|Numero $valor1, int|float|Numero $valor2): bool
+    function eMaior(int|float|string|Numero $valor1, int|float|string|Numero $valor2): bool
     {
         $numero = numero($valor1);
 
@@ -147,7 +163,7 @@ if (!function_exists('eMaior')) {
 }
 
 if (!function_exists('comparar')) {
-    function comparar(int|float|Numero $valor1, int|float|Numero $valor2): int
+    function comparar(int|float|string|Numero $valor1, int|float|string|Numero $valor2): int
     {
         $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
 
@@ -156,9 +172,9 @@ if (!function_exists('comparar')) {
 }
 
 if (!function_exists('fatorial')) {
-    function fatorial(int|Numero $numero): Numero
+    function fatorial(int|string|Numero $numero): Numero
     {
-        $fatorial = numero($numero);
+        $fatorial = numero(arredondar($numero, 0));
 
         while ($numero > 1) {
             $fatorial->multiplicar(--$numero);
@@ -169,21 +185,24 @@ if (!function_exists('fatorial')) {
 }
 
 if (!function_exists('raiz')) {
-    function raiz(float|int|Numero $numero): Numero
+    function raiz(float|int|string|Numero $numero): Numero
     {
         $numero = numero($numero);
+        if (eMenor($numero, 0)) {
+            throw new DomainException('Não é possível tirar raiz de numero negativo');
+        }
 
         return $numero->raiz();
     }
 }
 
 if (!function_exists('seno')) {
-    function seno(int|float|Numero $angulo): Numero
+    function seno(int|string|float|Numero $angulo): Numero
     {
-        $scale = bcscale();
-        bcscale($scale + 12);
-        $or = numero($angulo);
-        $r = subtrair($angulo, dividir(potencia($angulo, 3), 6));
+        $angulo = numero($angulo);
+        $precisao = $angulo->precisao + 12;
+        $or = numero($angulo, $precisao);
+        $r = subtrair($or, dividir(potencia($angulo, 3), numero(6, $precisao)));
         $i = 2;
         while (comparar($or, $r)) {
             $or = $r;
@@ -200,21 +219,17 @@ if (!function_exists('seno')) {
             ++$i;
         }
 
-        $retorno = $r->arredondar($scale - 1);
-        bcscale($scale);
-
-        return $retorno;
+        return $r->arredondar($precisao - 12);
     }
 }
 
 if (!function_exists('cosseno')) {
-    function cosseno(int|float|Numero $angulo): Numero
+    function cosseno(int|string|float|Numero $angulo): Numero
     {
-        $scale = bcscale();
-        bcscale($scale + 12);
-
+        $angulo = numero($angulo);
+        $precisao = $angulo->precisao + 12;
         $or = numero($angulo);
-        $r = subtrair(1, dividir(potencia($angulo, 2), 2));
+        $r = subtrair(numero(1, $precisao), dividir(potencia($angulo, 2), numero(2, $precisao)));
         $i = 2;
         while (comparar($or, $r)) {
             $or = $r;
@@ -231,37 +246,27 @@ if (!function_exists('cosseno')) {
             ++$i;
         }
 
-        $retorno = $r->arredondar($scale - 1);
-        bcscale($scale);
-
-        return $retorno;
+        return $r->arredondar($precisao - 12);
     }
 }
 
 if (!function_exists('tangente')) {
-    function tangente(int|float|Numero $angulo): Numero
+    function tangente(int|string|float|Numero $angulo): Numero
     {
-        $scale = bcscale();
-        bcscale($scale + 12);
         $cosseno = cosseno($angulo);
         if (eZero($cosseno)) {
-            bcscale($scale);
-
-            return numero(1E1000);
+            return numero(1E20);
         }
         $seno = seno($angulo);
-        $tangente = dividir($seno, $cosseno);
-        $retorno = $tangente->arredondar($scale - 1);
-        bcscale($scale);
 
-        return $retorno;
+        return dividir($seno, $cosseno);
     }
 }
 
 if (!function_exists('sbPi')) {
     function sbPi(int|Numero $precisao): Numero
     {
-        $precision = is_int($precisao) ? $precisao : $precisao->arredondar(0)->valor();
+        $precision = (int) arredondar($precisao, 0)->valor();
         $limit = ceil(log($precision) / log(2)) - 1;
         $scale = bcscale();
         bcscale($precision + 6);
@@ -288,34 +293,26 @@ if (!function_exists('sbPi')) {
 }
 
 if (!defined('S_PI')) {
-    $pi = (string) sbPi(5 * PRECISAO_SOLIDBASE);
+    $pi = (string) sbPi(2 * PRECISAO_SOLIDBASE);
     define('S_PI', $pi);
 }
 
 if (!function_exists('radiano')) {
     function radiano(int|float|string|Numero $anguloGrau): Numero
     {
-        $scale = bcscale();
-        bcscale(5 * PRECISAO_SOLIDBASE);
         $pi = numero(S_PI);
-        $grau = numero($anguloGrau);
-        $retorno = (multiplicar($grau, $pi))->dividir(180);
-        bcscale($scale);
+        $grau = numero($anguloGrau, $pi->precisao);
 
-        return $retorno;
+        return (multiplicar($pi, $grau))->dividir(180);
     }
 }
 
 if (!function_exists('grau')) {
     function grau(int|float|string|Numero $anguloRad): Numero
     {
-        $scale = bcscale();
-        bcscale(5 * PRECISAO_SOLIDBASE);
         $pi = numero(S_PI);
-        $rad = numero($anguloRad);
-        $retorno = (multiplicar($rad, 180))->dividir($pi);
-        bcscale($scale);
+        $rad = numero($anguloRad, $pi->precisao);
 
-        return $retorno;
+        return (multiplicar($rad, 180))->dividir($pi);
     }
 }

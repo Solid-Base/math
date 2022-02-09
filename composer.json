@@ -9,6 +9,10 @@
             "src/Aritimetica/funcoes.php"
         ]
     },
+    "require": {
+        "php": "^8.1.0",
+        "ext-bcmath": "*"
+    },
     "authors": [
         {
             "name": "Guilherme Luiz",

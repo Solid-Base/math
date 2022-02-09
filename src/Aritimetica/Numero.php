@@ -9,17 +9,18 @@ use Stringable;
 
 final class Numero implements Stringable
 {
+    public readonly int $precisao;
     private string $valor;
-    private int $precisao;
 
     public function __construct(int|float|string $numero = 0, ?int $precisao = null)
     {
         if (!is_numeric($numero)) {
             throw new DomainException('Não é um numero válido');
         }
-        $this->precisao = $precisao ?? bcscale();
+        $precisaoBc = $this->obtenhaBcPrecisao($this->converteFloat($numero));
+        $this->precisao = $precisao ?? max($precisaoBc, bcscale());
 
-        $this->valor = \is_string($numero) ? $numero : $this->converteFloat($numero);
+        $this->valor = $this->converteFloat($numero);
     }
 
     public function __toString(): string
@@ -124,20 +125,21 @@ final class Numero implements Stringable
         return -1 === bccomp($this->valor, $direita, $this->precisao);
     }
 
-    public function InteiroAcima($numero): self
+    public function InteiroAcima(): self
     {
+        $numero = $this->valor;
         if (str_contains($numero, '.')) {
             if (preg_match('~\\.[0]+$~', $numero)) {
                 return $this->arredondar(0);
             }
             if ('-' !== $numero[0]) {
-                return new self(bcadd($numero, '1', 0), $this->precisao);
+                return new self(bcadd($numero, '1', 0), 0);
             }
 
-            return new self(bcsub($numero, '0', 0), $this->precisao);
+            return new self(bcsub($numero, '0', 0), 0);
         }
 
-        return new self($numero, $this->precisao);
+        return new self($numero, 0);
     }
 
     public function InteiroAbaixo(): self
@@ -148,27 +150,45 @@ final class Numero implements Stringable
                 return $this->arredondar(0);
             }
             if ('-' !== $numero[0]) {
-                return new self(bcadd($numero, '0', 0), $this->precisao);
+                return new self(bcadd($numero, '0', 0), 0);
             }
 
-            return new self(bcsub($numero, '1', 0), $this->precisao);
+            return new self(bcsub($numero, '1', 0), 0);
         }
 
-        return new self($numero, $this->precisao);
+        return new self($numero, 0);
+    }
+
+    public function inteiro(): self
+    {
+        $valor = round($this->valor(), 0);
+
+        return new self($valor, 0);
     }
 
     public function arredondar(int $precisao = 0): self
     {
         $numero = $this->valor;
-        if (str_contains($numero, '.')) {
-            if ('-' !== $numero[0]) {
-                return new self(bcadd($numero, '0.'.str_repeat('0', $precisao).'5', $precisao), $this->precisao);
-            }
+        $precisao = $precisao < 0 ? 0 : $precisao;
+        if (0 == strcmp(bcadd($numero, '0', $precisao), bcadd($numero, '0', $precisao + 1))) {
+            return new self(bcadd($numero, '0', $precisao));
+        }
+        if ($this->obtenhaBcPrecisao($numero) - $precisao > 1) {
+            return $this->arredondar($precisao + 1);
+        }
+        $t = '0.'.str_repeat('0', $precisao).'5';
 
-            return new self(bcsub($numero, '0.'.str_repeat('0', $precisao).'5', $precisao), $this->precisao);
+        return (float) $numero < 0 ? new self(bcsub($numero, $t, $precisao), $precisao) : new self(bcadd($numero, $t, $precisao), $precisao);
+    }
+
+    private function obtenhaBcPrecisao(string $numero): int
+    {
+        $pontoPrecisao = mb_strpos($numero, '.');
+        if (false === $pontoPrecisao) {
+            return 0;
         }
 
-        return new self($numero, $this->precisao);
+        return mb_strlen($numero) - mb_strpos($numero, '.') - 1;
     }
 
     private function converteParaNumero(int|float|Numero $valor): string
@@ -180,8 +200,11 @@ final class Numero implements Stringable
         return $this->converteFloat($valor);
     }
 
-    private function converteFloat(int|float $valor): string
+    private function converteFloat(int|float|string $valor): string
     {
+        if (is_string($valor)) {
+            return $valor;
+        }
         $norm = (string) ($valor);
 
         if (($e = mb_strrchr($norm, 'E')) === false) {
