@@ -131,12 +131,16 @@ if (!function_exists('entre')) {
 }
 
 if (!function_exists('potencia')) {
-    function potencia(int|float|string|Numero $valor1, int|Numero $valor2): Numero
+    function potencia(int|float|string|Numero $valor1, int|float|string|Numero $valor2): Numero
     {
-        $pontecia = arredondar($valor2, 0)->valor();
         $numero = numero($valor1);
+        $precisao = $numero->precisao + 12;
+        $pontecia = numero($valor2, $precisao);
+        if (eInteiro($pontecia)) {
+            return $numero->potencia($pontecia->arredondar(0));
+        }
 
-        return $numero->potencia($pontecia);
+        return exponencial(multiplicar($pontecia, ln(numero($numero, $precisao))))->arredondar($precisao - 13);
     }
 }
 
@@ -192,9 +196,52 @@ if (!function_exists('raiz')) {
     }
 }
 
+if (!function_exists('exponencial')) {
+    function exponencial(float|int|string|Numero $numero): Numero
+    {
+        $numero = numero($numero);
+        $precisao = $numero->precisao + 6;
+        $or = numero(1, $precisao);
+        $r = somar(numero(1, $precisao), potencia($numero, 1)->dividir(1));
+        $i = 2;
+        while (comparar($or, $r)) {
+            $or = $r;
+            $r = somar($r, potencia($numero, $i)->dividir(fatorial($i)));
+            ++$i;
+        }
+
+        return $r->arredondar($precisao - 6);
+    }
+}
+
+if (!function_exists('ln')) {
+    function ln(float|int|string|Numero $numero) // value > 0
+    {
+        $precisao = PRECISAO_SOLIDBASE + 6;
+        $numero = numero($numero, $precisao);
+        $m = numero(log($numero->valor()), $precisao);
+        $x = subtrair(dividir($numero, exponencial($m)), 1);
+
+        $res = numero(0, $precisao);
+        $xpow = numero(1, $precisao);
+        $i = 0;
+        do {
+            ++$i;
+            $xpow = multiplicar($xpow, $x);
+            $sum = dividir($xpow, $i);
+            if (1 == $i % 2) {
+                $res = somar($res, $sum);
+            } else {
+                $res = subtrair($res, $sum);
+            }
+        } while (comparar($sum, 0));
+
+        return somar($res, $m)->arredondar($precisao - 6);
+    }
+}
 if (!defined('ZERO_SOLIDBASE')) {
     $scale = bcscale();
     $precisao = (int) max($scale / 2, 9);
-    $zero = dividir(numero(1, $precisao), potencia(10, $precisao));
+    $zero = dividir(numero(1, $precisao), numero(10)->potencia($precisao));
     define('ZERO_SOLIDBASE', $zero);
 }

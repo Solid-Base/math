@@ -102,6 +102,8 @@ final class Numero implements Stringable
         return $this;
     }
 
+   
+
     public function comparar(int|float|Numero $valor): int
     {
         $direita = $this->converteParaNumero($valor);
