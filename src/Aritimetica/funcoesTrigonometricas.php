@@ -72,6 +72,12 @@ if (!function_exists('arcoSeno')) {
         }
         $seno = numero($seno);
         $precisao = $seno->precisao + 12;
+        $seno = numero($seno, $precisao);
+        $tangente = dividir($seno, somar(numero(1, $precisao), raiz(subtrair(numero(1, $precisao), potencia($seno, 2)))));
+        $arcoTangete = arcoTangente($tangente);
+
+        return multiplicar($arcoTangete, 2)->arredondar($precisao - 12);
+        $precisao = $seno->precisao + 6;
         $or = numero($seno, $precisao);
         $r = somar($or, dividir(multiplicar(numero(2, $precisao), potencia($seno, 3)), numero(12, $precisao)));
         $i = 2;
@@ -95,13 +101,16 @@ if (!function_exists('arcoCosseno')) {
             throw new DomainException('Função Arco Cosseno, deve ter numeros no intervalo fechado -1 e 1');
         }
         $cosseno = numero($cosseno);
-        $seno = subtrair(numero(1, $cosseno->precisao), potencia($cosseno, 2))->raiz();
-        $arcoSeno = arcoSeno($seno);
+        $precisao = $cosseno->precisao + 12;
+        $tangente = raiz(numero(1, $precisao)->subtrair(potencia(numero($cosseno, $precisao), 2)))->dividir(somar(numero(1, $precisao), $cosseno));
+        $arcoTangete = arcoTangente($tangente);
+
+        $retorno = $arcoTangete->multiplicar(2);
         if (eMenor($cosseno, 0)) {
-            return subtrair(S_PI, $arcoSeno);
+            return subtrair(S_PI, $retorno)->arredondar($precisao);
         }
 
-        return $arcoSeno;
+        return $retorno->arredondar($precisao);
     }
 }
 
@@ -123,6 +132,14 @@ if (!function_exists('arcoTangente')) {
     {
         $tangente = numero($tangente);
         $precisao = $tangente->precisao + 12;
+        if (eMaior($tangente, 0.8) || eMenor($tangente, -0.8)) {
+            $tangente = numero($tangente, $precisao);
+            $tangente = dividir(numero($tangente, $precisao), somar(numero(1, $precisao), raiz(somar(numero(1, $precisao), potencia($tangente, 2)))));
+            $angulo = arcoTangente($tangente);
+
+            return $angulo->multiplicar(2)->arredondar($precisao - 12);
+        }
+
         $or = numero($tangente, $precisao);
         $r = subtrair($or, dividir(potencia($tangente, 3), numero(3, $precisao)));
         $i = 2;
