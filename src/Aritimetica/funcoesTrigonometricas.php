@@ -100,17 +100,24 @@ if (!function_exists('arcoCosseno')) {
         if (eMaior($cosseno, 1) || eMenor($cosseno, -1)) {
             throw new DomainException('Função Arco Cosseno, deve ter numeros no intervalo fechado -1 e 1');
         }
+        if (eIgual($cosseno, 1)) {
+            return numero(0);
+        }
+        if (eIgual($cosseno, -1)) {
+            return numero(S_PI);
+        }
+
         $cosseno = numero($cosseno);
         $precisao = $cosseno->precisao + 12;
         $tangente = raiz(numero(1, $precisao)->subtrair(potencia(numero($cosseno, $precisao), 2)))->dividir(somar(numero(1, $precisao), $cosseno));
         $arcoTangete = arcoTangente($tangente);
 
         $retorno = $arcoTangete->multiplicar(2);
-        if (eMenor($cosseno, 0)) {
-            return subtrair(S_PI, $retorno)->arredondar($precisao);
-        }
+        // if (eMenor($cosseno, 0)) {
+        //     return subtrair(S_PI, $retorno)->arredondar($precisao - 12);
+        // }
 
-        return $retorno->arredondar($precisao);
+        return $retorno->arredondar($precisao - 12);
     }
 }
 
