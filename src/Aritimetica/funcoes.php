@@ -5,7 +5,7 @@ declare(strict_types=1);
 use SolidBase\Matematica\Aritimetica\Numero;
 
 if (!defined('PRECISAO_SOLIDBASE')) {
-    $scale = 0 === bcscale() ? 12 : bcscale();
+    $scale = 0 === bcscale() ? 15 : bcscale();
     define('PRECISAO_SOLIDBASE', $scale);
     bcscale($scale);
 }

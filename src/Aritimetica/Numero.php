@@ -25,12 +25,14 @@ final class Numero implements Stringable
 
     public function __toString(): string
     {
-        return $this->removeFloatStringZeros();
+        $valor = $this->numeroArredondado($this->precisao, $this->valor);
+
+        return $this->removeFloatStringZeros($valor);
     }
 
     public function valor(): float
     {
-        return (float) $this->valor;
+        return (float) $this->numeroArredondado($this->precisao, $this->valor);
     }
 
     public function somar(int|float|Numero $valor): self
@@ -44,6 +46,7 @@ final class Numero implements Stringable
     public function subtrair(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
+
         $this->valor = bcsub($this->valor, $direita, $this->precisao);
 
         return $this;
@@ -69,6 +72,7 @@ final class Numero implements Stringable
     public function dividir(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
+
         $this->valor = bcdiv($this->valor, $direita, $this->precisao);
 
         return $this;
@@ -85,14 +89,15 @@ final class Numero implements Stringable
     public function potencia(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $this->valor = bcpow($this->valor, $direita, $this->precisao);
+        $precisao = $this->precisao + $this->obtenhaBcPrecisao($direita);
+        $this->valor = bcpow($this->valor, $direita, $precisao);
 
         return $this;
     }
 
     public function raiz(): self
     {
-        $this->valor = bcsqrt($this->valor, $this->precisao);
+        $this->valor = bcsqrt($this->valor, 2 * $this->precisao);
 
         return $this;
     }
@@ -166,7 +171,13 @@ final class Numero implements Stringable
 
     public function arredondar(int $precisao = 0): self
     {
-        $numero = $this->valor;
+        $numero = $this->numeroArredondado($precisao, $this->valor);
+
+        return new self($numero, $precisao);
+    }
+
+    private function numeroArredondado(int $precisao, string $numero): string
+    {
         $precisao = $precisao < 0 ? 0 : $precisao;
         $precisaoTotal = $this->obtenhaBcPrecisao($numero);
         while ($precisaoTotal >= $precisao) {
@@ -175,7 +186,7 @@ final class Numero implements Stringable
             --$precisaoTotal;
         }
 
-        return new self($numero, $precisao);
+        return $numero;
     }
 
     private function obtenhaBcPrecisao(string $numero): int
@@ -212,11 +223,11 @@ final class Numero implements Stringable
         return number_format((float) $valor, $decimal, '.', '');
     }
 
-    private function removeFloatStringZeros(): string
+    private function removeFloatStringZeros(string $valor): string
     {
         $patterns = ['/[\.][0]+$/', '/([\.][0-9]*[1-9])([0]*)$/'];
         $replaces = ['', '$1'];
 
-        return preg_replace($patterns, $replaces, $this->valor);
+        return preg_replace($patterns, $replaces, $valor);
     }
 }

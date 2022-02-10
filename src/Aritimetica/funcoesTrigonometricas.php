@@ -64,6 +64,12 @@ if (!function_exists('arcoSeno')) {
         if (eMaior($seno, 1) || eMenor($seno, -1)) {
             throw new DomainException('Função Arco Seno, deve ter numeros no intervalo fechado -1 e 1');
         }
+        if (eIgual($seno, 1)) {
+            return dividir(S_PI, 2);
+        }
+        if (eIgual($seno, -1)) {
+            return dividir(S_PI, 2)->multiplicar(-1);
+        }
         $seno = numero($seno);
         $precisao = $seno->precisao + 12;
         $or = numero($seno, $precisao);
@@ -90,8 +96,12 @@ if (!function_exists('arcoCosseno')) {
         }
         $cosseno = numero($cosseno);
         $seno = subtrair(numero(1, $cosseno->precisao), potencia($cosseno, 2))->raiz();
+        $arcoSeno = arcoSeno($seno);
+        if (eMenor($cosseno, 0)) {
+            return subtrair(S_PI, $arcoSeno);
+        }
 
-        return arcoSeno($seno);
+        return $arcoSeno;
     }
 }
 
