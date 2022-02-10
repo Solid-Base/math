@@ -7,6 +7,7 @@ namespace SolidBase\Matematica\Shield;
 use Solidbase\Geometria\Dominio\Ponto;
 use SolidBase\Matematica\Algebra\Matriz;
 use SolidBase\Matematica\Algebra\MatrizInversa;
+use SolidBase\Matematica\Aritimetica\Numero;
 
 class Shield
 {
@@ -39,12 +40,12 @@ class Shield
         $matriz = [];
         /** @var Ponto $ponto */
         foreach ($this->pontos as $key => $ponto) {
-            $px = 1;
-            $py = 0;
-            $pz = 0;
-            $pa = 0;
+            $px = numero(1, PRECISAO_SOLIDBASE);
+            $py = numero(0, PRECISAO_SOLIDBASE);
+            $pz = numero(0, PRECISAO_SOLIDBASE);
+            $pa = numero(0, PRECISAO_SOLIDBASE);
             $pb = $ponto->x;
-            $pc = -$ponto->y;
+            $pc = $ponto->y->multiplicar(-1);
             $matriz[0][$key] = $px;
             // $matriz[1][$key] = $py;
             // $matriz[2][$key] = $pz;
@@ -54,7 +55,7 @@ class Shield
         }
 
         foreach ($matriz as $key => $linha) {
-            $soma = array_reduce($linha, fn (float $total, float $n) => $total + abs($n), 0);
+            $soma = array_reduce($linha, fn (float $total, Numero $n) => $total + modulo($n)->valor(), 0);
             if (eZero($soma)) {
                 unset($matriz[$key]);
             }
