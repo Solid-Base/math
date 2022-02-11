@@ -170,7 +170,7 @@ if (!function_exists('ePositivo')) {
 }
 
 if (!function_exists('eZeroOuPositivo')) {
-    function ePositivo(int|float|string|Numero $valor1): bool
+    function eZeroOuPositivo(int|float|string|Numero $valor1): bool
     {
         return eZero($valor1) || eMaior($valor1, 0);
     }
