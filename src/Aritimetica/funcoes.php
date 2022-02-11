@@ -162,6 +162,34 @@ if (!function_exists('eMaior')) {
     }
 }
 
+if (!function_exists('ePositivo')) {
+    function ePositivo(int|float|string|Numero $valor1): bool
+    {
+        return eMaior($valor1, 0);
+    }
+}
+
+if (!function_exists('eZeroOuPositivo')) {
+    function ePositivo(int|float|string|Numero $valor1): bool
+    {
+        return eZero($valor1) || eMaior($valor1, 0);
+    }
+}
+
+if (!function_exists('eNegativo')) {
+    function eNegativo(int|float|string|Numero $valor1): bool
+    {
+        return eMenor($valor1, 0);
+    }
+}
+
+if (!function_exists('eZeroOuNegativo')) {
+    function eZeroOuNegativo(int|float|string|Numero $valor1): bool
+    {
+        return eZero($valor1) || eMenor($valor1, 0);
+    }
+}
+
 if (!function_exists('comparar')) {
     function comparar(int|float|string|Numero $valor1, int|float|string|Numero $valor2): int
     {

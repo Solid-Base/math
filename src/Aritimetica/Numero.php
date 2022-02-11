@@ -89,8 +89,7 @@ final class Numero implements Stringable
     public function potencia(int|float|Numero $valor): self
     {
         $direita = $this->converteParaNumero($valor);
-        $precisao = $this->precisao + $this->obtenhaBcPrecisao($direita);
-        $this->valor = bcpow($this->valor, $direita, $precisao);
+        $this->valor = bcpow($this->valor, $direita, $this->precisao);
 
         return $this;
     }
@@ -101,8 +100,6 @@ final class Numero implements Stringable
 
         return $this;
     }
-
-   
 
     public function comparar(int|float|Numero $valor): int
     {
