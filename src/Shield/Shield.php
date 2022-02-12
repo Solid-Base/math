@@ -43,8 +43,8 @@ class Shield
             $py = 0;
             $pz = 0;
             $pa = 0;
-            $pb = $ponto->x;
-            $pc = $ponto->y * -1;
+            $pb = normalizar($ponto->x);
+            $pc = normalizar($ponto->y * -1);
             $matriz[0][$key] = $px;
             // $matriz[1][$key] = $py;
             // $matriz[2][$key] = $pz;
