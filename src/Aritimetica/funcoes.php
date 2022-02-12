@@ -2,123 +2,53 @@
 
 declare(strict_types=1);
 
-use SolidBase\Matematica\Aritimetica\Numero;
-
 if (!defined('PRECISAO_SOLIDBASE')) {
-    $scale = 0 === bcscale() ? 15 : bcscale();
+    $scale = 14;
     define('PRECISAO_SOLIDBASE', $scale);
-    bcscale($scale);
 }
 
-if (!function_exists('somar')) {
-    function somar(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
-    {
-        $numero = numero($valor1);
-
-        return $numero->somar($valor2);
-    }
-}
-if (!function_exists('numero')) {
-    function numero(int|float|string|Numero $valor, ?int $precisao = null): Numero
-    {
-        $precisao ??= is_a($valor, Numero::class) ? $valor->precisao : $precisao;
-
-        return is_a($valor, Numero::class) ? new Numero((string) $valor, $precisao) : new Numero($valor, $precisao);
-    }
-}
-
-if (!function_exists('subtrair')) {
-    function subtrair(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
-    {
-        $numero = numero($valor1);
-
-        return $numero->subtrair($valor2);
-    }
-}
-
-if (!function_exists('multiplicar')) {
-    function multiplicar(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
-    {
-        $numero = numero($valor1);
-
-        return $numero->multiplicar($valor2);
-    }
-}
-
-if (!function_exists('dividir')) {
-    function dividir(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
-    {
-        $numero = numero($valor1);
-
-        return $numero->dividir($valor2);
-    }
-}
-
-if (!function_exists('eInteiro')) {
-    function eInteiro(int|string|float|Numero $valor): bool
-    {
-        $numeroInteiro = numero($valor)->arredondar(0);
-
-        return eIgual($valor, $numeroInteiro, false);
-    }
-}
 if (!function_exists('modulo')) {
-    function modulo(int|string|float|Numero $valor): Numero
+    function modulo(int|float $valor): int|float
     {
-        $numero = numero($valor);
-
-        return $numero->modulo();
+        return abs($valor);
     }
 }
 if (!function_exists('mod')) {
-    function mod(int|string|float|Numero $valor1, int|string|float|Numero $valor2): Numero
+    function mod(int|float $valor1, int|float $valor2): float
     {
-        $numero = numero($valor1);
-
-        return $numero->mod($valor2);
+        return fmod($valor1, $valor2);
     }
 }
 
 if (!function_exists('eIgual')) {
-    function eIgual(int|string|float|Numero $valor1, int|string|float|Numero $valor2, $estrito = true): bool
+    function eIgual(int|float $valor1, int|float $valor2, $estrito = true): bool
     {
-        $numero = numero($valor1);
         if ($estrito) {
-            return $numero->eIgual($valor2);
+            return $valor1 === $valor2;
         }
 
-        return eZero(subtrair($numero, $valor2));
+        return eZero($valor1 - $valor2);
     }
 }
 
 if (!function_exists('eZero')) {
-    function eZero(int|string|float|Numero $valor): bool
+    function eZero(int|float $valor): bool
     {
-        $precisao = is_a($valor, Numero::class) ? $valor->precisao : bcscale();
-        $zeroEsquerda = numero(ZERO_SOLIDBASE)->multiplicar(-1);
-        $zeroDireita = numero(ZERO_SOLIDBASE);
-
-        return entre($zeroEsquerda, arredondar($valor, $precisao), $zeroDireita);
+        return entre(-ZERO_SOLIDBASE, $valor, ZERO_SOLIDBASE);
     }
 }
 if (!function_exists('arredondar')) {
-    function arredondar(int|float|string|Numero $numero, int $casas): Numero
+    function arredondar(int|float $numero, int $casas): int|float
     {
-        $numero = numero($numero);
-
-        return $numero->arredondar($casas);
+        return round($numero, $casas);
     }
 }
 if (!function_exists('entre')) {
     function entre(
-        int|string|float|Numero $valorEsquerda,
-        int|string|float|Numero $valorComparacao,
-        int|string|float|Numero $valorDireita
+        int|float $valorEsquerda,
+        int|float $valorComparacao,
+        int|float $valorDireita
     ): bool {
-        $valorEsquerda = numero($valorEsquerda);
-        $valorDireita = numero($valorDireita);
-        $valorComparacao = numero($valorComparacao);
-
         if (eMaior($valorEsquerda, $valorComparacao)) {
             return false;
         }
@@ -129,147 +59,68 @@ if (!function_exists('entre')) {
         return true;
     }
 }
-
-if (!function_exists('potencia')) {
-    function potencia(int|float|string|Numero $valor1, int|float|string|Numero $valor2): Numero
+if (!function_exists('eInteiro')) {
+    function eInteiro(int|float $valor): bool
     {
-        $numero = numero($valor1);
-        $precisao = $numero->precisao + 12;
-        $pontecia = numero($valor2, $precisao);
-        if (eInteiro($pontecia)) {
-            return $numero->potencia($pontecia->arredondar(0));
-        }
+        $numero = round(abs($valor), 0);
+        $numeroEsquerda = $valor - ZERO_SOLIDBASE;
+        $numerDireita = $valor + ZERO_SOLIDBASE;
 
-        return exponencial(multiplicar($pontecia, ln(numero($numero, $precisao))))->arredondar($precisao - 13);
+        return entre($numeroEsquerda, $numero, $numerDireita);
     }
 }
-
 if (!function_exists('eMenor')) {
-    function eMenor(int|float|string|Numero $valor1, int|float|string|Numero $valor2): bool
+    function eMenor(int|float $valor1, int|float $valor2): bool
     {
-        $numero = numero($valor1);
-
-        return $numero->eMenor($valor2);
+        return $valor1 < $valor2;
     }
 }
 
 if (!function_exists('eMaior')) {
-    function eMaior(int|float|string|Numero $valor1, int|float|string|Numero $valor2): bool
+    function eMaior(int|float $valor1, int|float $valor2): bool
     {
-        $numero = numero($valor1);
-
-        return $numero->eMaior($valor2);
+        return $valor1 > $valor2;
     }
 }
 
 if (!function_exists('ePositivo')) {
-    function ePositivo(int|float|string|Numero $valor1): bool
+    function ePositivo(int|float $valor1): bool
     {
         return eMaior($valor1, 0);
     }
 }
 
 if (!function_exists('eZeroOuPositivo')) {
-    function eZeroOuPositivo(int|float|string|Numero $valor1): bool
+    function eZeroOuPositivo(int|float $valor1): bool
     {
         return eZero($valor1) || eMaior($valor1, 0);
     }
 }
 
 if (!function_exists('eNegativo')) {
-    function eNegativo(int|float|string|Numero $valor1): bool
+    function eNegativo(int|float $valor1): bool
     {
         return eMenor($valor1, 0);
     }
 }
 
 if (!function_exists('eZeroOuNegativo')) {
-    function eZeroOuNegativo(int|float|string|Numero $valor1): bool
+    function eZeroOuNegativo(int|float $valor1): bool
     {
         return eZero($valor1) || eMenor($valor1, 0);
     }
 }
 
 if (!function_exists('comparar')) {
-    function comparar(int|float|string|Numero $valor1, int|float|string|Numero $valor2): int
+    function comparar(int|float $valor1, int|float $valor2): int
     {
-        $numero = is_a($valor1, Numero::class) ? $valor1 : new Numero($valor1);
-
-        return $numero->comparar($valor2);
+        return $valor1 <=> $valor2;
     }
 }
 
-if (!function_exists('fatorial')) {
-    function fatorial(int|string|Numero $numero): Numero
-    {
-        $fatorial = numero(arredondar($numero, 0));
-
-        while ($numero > 1) {
-            $fatorial->multiplicar(--$numero);
-        }
-
-        return $fatorial;
-    }
-}
-
-if (!function_exists('raiz')) {
-    function raiz(float|int|string|Numero $numero): Numero
-    {
-        $numero = numero($numero);
-        if (eMenor($numero, 0)) {
-            throw new DomainException('Não é possível tirar raiz de numero negativo');
-        }
-
-        return $numero->raiz();
-    }
-}
-
-if (!function_exists('exponencial')) {
-    function exponencial(float|int|string|Numero $numero): Numero
-    {
-        $numero = numero($numero);
-        $precisao = $numero->precisao + 6;
-        $or = numero(1, $precisao);
-        $r = somar(numero(1, $precisao), potencia($numero, 1)->dividir(1));
-        $i = 2;
-        while (comparar($or, $r)) {
-            $or = $r;
-            $r = somar($r, potencia($numero, $i)->dividir(fatorial($i)));
-            ++$i;
-        }
-
-        return $r->arredondar($precisao - 6);
-    }
-}
-
-if (!function_exists('ln')) {
-    function ln(float|int|string|Numero $numero) // value > 0
-    {
-        $precisao = PRECISAO_SOLIDBASE + 6;
-        $numero = numero($numero, $precisao);
-        $m = numero(log($numero->valor()), $precisao);
-        $x = subtrair(dividir($numero, exponencial($m)), 1);
-
-        $res = numero(0, $precisao);
-        $xpow = numero(1, $precisao);
-        $i = 0;
-        do {
-            ++$i;
-            $xpow = multiplicar($xpow, $x);
-            $sum = dividir($xpow, $i);
-            if (1 == $i % 2) {
-                $res = somar($res, $sum);
-            } else {
-                $res = subtrair($res, $sum);
-            }
-        } while (comparar($sum, 0));
-
-        return somar($res, $m)->arredondar($precisao - 6);
-    }
-}
 if (!defined('ZERO_SOLIDBASE')) {
-    $scale = bcscale();
+    $scale = PRECISAO_SOLIDBASE;
     $precisao = (int) max($scale / 2, 9);
-    $zero = dividir(numero(1, $precisao), numero(10)->potencia($precisao));
+    $zero = 1 / (10 ** $precisao);
     define('ZERO_SOLIDBASE', $zero);
 }

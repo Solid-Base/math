@@ -6,16 +6,12 @@ namespace SolidBase\Matematica\Algebra;
 
 use DomainException;
 use InvalidArgumentException;
-use SolidBase\Matematica\Aritimetica\Numero;
 use SolidBase\Matematica\Excecao\ExcecaoColunaNaoExiste;
 
 class Matriz extends MatrizBase
 {
-    private int $precisao;
-
     public function __construct(array $matriz)
     {
-        $this->precisao = bcscale();
         $this->NumeroLinha = \count($matriz);
         $this->NumeroColuna = \is_array($matriz[0]) ? \count($matriz[0]) : 1;
         foreach ($matriz as $i => $linha) {
@@ -47,17 +43,14 @@ class Matriz extends MatrizBase
         if (\count($linha) !== $this->NumeroColuna) {
             throw new DomainException('Para adicionar uma linha, a mesma deve ter o mesmo numero de colunas que a matriz');
         }
-        $this->matriz[$this->NumeroLinha] = array_map(fn (mixed $n) => numero($n), $linha);
+        $this->matriz[$this->NumeroLinha] = array_map(fn (float|int $n) => $n, $linha);
         ++$this->NumeroLinha;
     }
 
-    public function Item(int $i, $j, $real = true): float|Numero
+    public function Item(int $i, $j): float|int
     {
         if (!isset($this->matriz[$i]) || !isset($this->matriz[$i][$j])) {
             throw new InvalidArgumentException('Não existe o item solicitado');
-        }
-        if ($real) {
-            return $this->matriz[$i][$j]->valor();
         }
 
         return $this->matriz[$i][$j];
@@ -65,7 +58,7 @@ class Matriz extends MatrizBase
 
     public function obtenhaLinha($i): array
     {
-        return array_map(fn (Numero $n) => $n->valor(), $this->matriz[$i]);
+        return array_map(fn (float|int $n) => $n, $this->matriz[$i]);
     }
 
     public function obtenhaColuna($j): array
@@ -75,7 +68,7 @@ class Matriz extends MatrizBase
         }
         $retorno = [];
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
-            $retorno[$i][0] = $this->matriz[$i][$j]->valor();
+            $retorno[$i][0] = $this->matriz[$i][$j];
         }
 
         return $retorno;
@@ -87,7 +80,7 @@ class Matriz extends MatrizBase
             throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
         }
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
-            $this->matriz[$i][$j] = numero($valor[$i][0]);
+            $this->matriz[$i][$j] = $valor[$i][0];
         }
     }
 
@@ -97,17 +90,14 @@ class Matriz extends MatrizBase
             throw new DomainException('Para somar duas matrizes, é necessário que as mesmas possuem a mesma ordem');
         }
         $matrizSoma = [];
-        $precisao = max($this->precisao, $matriz->precisao);
+
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $this->NumeroColuna; ++$j) {
-                $matrizSoma[$i][$j] = somar($this->Item($i, $j, false), ($matriz->Item($i, $j)));
+                $matrizSoma[$i][$j] = $this->Item($i, $j) + $matriz->Item($i, $j);
             }
         }
 
-        $retorno = new self($matrizSoma);
-        $retorno->precisao = $precisao;
-
-        return $retorno;
+        return new self($matrizSoma);
     }
 
     public function Multiplicar(self $matriz): self
@@ -116,37 +106,29 @@ class Matriz extends MatrizBase
             throw new DomainException('Para multiplicar matrizes, a primeira matriz deve ter o numero de colunas igual ao da segunda.');
         }
         $matrizMultiplicacao = [];
-        $precisaoMultiplicacao = $this->precisao * $matriz->precisao;
-        $precisaoRetorno = max($matriz->precisao, $this->precisao);
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $matriz->NumeroColuna; ++$j) {
-                $soma = numero(0, $precisaoMultiplicacao);
+                $soma = 0;
                 for ($k = 0; $k < $matriz->NumeroLinha; ++$k) {
-                    $soma->somar(multiplicar($this->Item($i, $k), $matriz->Item($k, $j)));
+                    $soma += $this->Item($i, $k) * $matriz->Item($k, $j);
                 }
-                $matrizMultiplicacao[$i][$j] = eZero($soma) ? numero(0, $precisaoRetorno) : arredondar($soma, $precisaoRetorno);
+                $matrizMultiplicacao[$i][$j] = eZero($soma) ? 0 : $soma;
             }
         }
 
-        $retorno = new self($matrizMultiplicacao);
-        $retorno->precisao = $precisaoRetorno;
-
-        return $retorno;
+        return new self($matrizMultiplicacao);
     }
 
-    public function Escalar(float|Numero $escala): self
+    public function Escalar(float|int $escala): self
     {
         $matriz = [];
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $this->NumeroColuna; ++$j) {
-                $matriz[$i][$j] = multiplicar($this->matriz[$i][$j], $escala);
+                $matriz[$i][$j] = $this->matriz[$i][$j] * $escala;
             }
         }
 
-        $retorno = new self($matriz);
-        $retorno->precisao = $this->precisao;
-
-        return $retorno;
+        return new self($matriz);
     }
 
     public static function Identidade(float $n): self
@@ -179,25 +161,7 @@ class Matriz extends MatrizBase
             }
         }
 
-        $retorno = new self($matriz);
-        $retorno->precisao = $this->precisao;
-
-        return $retorno;
-    }
-
-    /**
-     * Informar o valor precisao.
-     */
-    public function informarPrecisao(int $precisao): self
-    {
-        $this->precisao = $precisao;
-
-        return $this;
-    }
-
-    public function obtenhaPrecisao(): int
-    {
-        return $this->precisao;
+        return new self($matriz);
     }
 
     public function eIdentidade(): bool
@@ -207,7 +171,7 @@ class Matriz extends MatrizBase
         }
         $t = $this->obtenhaN();
         for ($i = 0; $i < $t; ++$i) {
-            if (!$this->Item($i, $i, false)->eIgual(1)) {
+            if (!eZero($this->Item($i, $i) - 1)) {
                 return false;
             }
         }
@@ -215,17 +179,15 @@ class Matriz extends MatrizBase
         return true;
     }
 
-    private function adicionarItem(int $i, int $j, int|string|Numero|float $valor): void
+    private function adicionarItem(int $i, int $j, int|float $valor): void
     {
-        $numero = numero($valor, $this->precisao);
-        $this->precisao = max($this->precisao, $numero->precisao);
-        $numero = eInteiro($numero) ? numero($numero->inteiro(), $this->precisao) : $numero;
+        $numero = eInteiro($valor) ? round($valor, 0) : $valor;
         $this->matriz[$i][$j] = $numero;
     }
 
     private function informarLinha(int $i, array $valor): void
     {
-        $this->matriz[$i] = array_map(fn (float|Numero|int $n) => numero($n), $valor);
+        $this->matriz[$i] = array_map(fn (float|int $n) => $n, $valor);
     }
 
     private function matrizEMesmaOrdem(self $matriz)

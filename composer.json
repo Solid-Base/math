@@ -6,8 +6,7 @@
             "SolidBase\\Matematica\\": "src/"
         },
         "files": [
-            "src/Aritimetica/funcoes.php",
-            "src/Aritimetica/funcoesTrigonometricas.php"
+            "src/Aritimetica/funcoes.php"
         ]
     },
     "require": {

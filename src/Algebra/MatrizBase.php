@@ -13,13 +13,13 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
     protected int $NumeroLinha;
     protected int $NumeroColuna;
 
-    public function obtenhaMatriz(bool $real = true): array
+    public function obtenhaMatriz(): array
     {
         $retorno = [];
         foreach ($this->matriz as $linha => $valores) {
             foreach ($valores as $coluna => $valor) {
-                $numero = eZero($valor) ? numero(0, $valor->precisao) : $valor;
-                $retorno[$linha][$coluna] = $real ? $numero->valor() : (string) $valor;
+                $numero = eZero($valor) ? 0 : $valor;
+                $retorno[$linha][$coluna] = $numero;
             }
         }
 
@@ -52,7 +52,7 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
             return $this->matriz[$offset];
         }
 
-        return $this->matriz[$offset]->valor();
+        return $this->matriz[$offset];
     }
 
     public function offsetSet($offset, $value): void
