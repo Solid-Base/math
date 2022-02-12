@@ -28,7 +28,7 @@ class Matriz extends MatrizBase
 
     public function adicionarColuna(array $coluna): void
     {
-        if (\count($coluna) !== $this->NumeroLinha) {
+        if (\count($coluna) != $this->NumeroLinha) {
             throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
         }
         $j = $this->NumeroColuna;
@@ -40,7 +40,7 @@ class Matriz extends MatrizBase
 
     public function adicionarLinha(array $linha): void
     {
-        if (\count($linha) !== $this->NumeroColuna) {
+        if (\count($linha) != $this->NumeroColuna) {
             throw new DomainException('Para adicionar uma linha, a mesma deve ter o mesmo numero de colunas que a matriz');
         }
         $this->matriz[$this->NumeroLinha] = array_map(fn (float|int $n) => $n, $linha);
@@ -102,7 +102,7 @@ class Matriz extends MatrizBase
 
     public function Multiplicar(self $matriz): self
     {
-        if ($this->NumeroColuna !== $matriz->NumeroLinha) {
+        if ($this->NumeroColuna != $matriz->NumeroLinha) {
             throw new DomainException('Para multiplicar matrizes, a primeira matriz deve ter o numero de colunas igual ao da segunda.');
         }
         $matrizMultiplicacao = [];
@@ -131,12 +131,12 @@ class Matriz extends MatrizBase
         return new self($matriz);
     }
 
-    public static function Identidade(float $n): self
+    public static function Identidade(int $n): self
     {
         $matriz = [];
         for ($i = 0; $i < $n; ++$i) {
             for ($j = 0; $j < $n; ++$j) {
-                $matriz[$i][$j] = $i === $j ? 1 : 0;
+                $matriz[$i][$j] = $i == $j ? 1 : 0;
             }
         }
 
