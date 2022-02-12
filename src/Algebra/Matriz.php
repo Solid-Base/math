@@ -47,7 +47,7 @@ class Matriz extends MatrizBase
         ++$this->NumeroLinha;
     }
 
-    public function Item(int $i, $j): float|int
+    public function Item(int $i, int $j): float|int
     {
         if (!isset($this->matriz[$i]) || !isset($this->matriz[$i][$j])) {
             throw new InvalidArgumentException('Não existe o item solicitado');
@@ -56,12 +56,12 @@ class Matriz extends MatrizBase
         return $this->matriz[$i][$j];
     }
 
-    public function obtenhaLinha($i): array
+    public function obtenhaLinha(int $i): array
     {
         return array_map(fn (float|int $n) => $n, $this->matriz[$i]);
     }
 
-    public function obtenhaColuna($j): array
+    public function obtenhaColuna(int $j): array
     {
         if ($j >= $this->NumeroColuna) {
             throw new ExcecaoColunaNaoExiste();
