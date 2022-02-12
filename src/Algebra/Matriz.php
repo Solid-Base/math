@@ -43,7 +43,7 @@ class Matriz extends MatrizBase
         if (\count($linha) != $this->NumeroColuna) {
             throw new DomainException('Para adicionar uma linha, a mesma deve ter o mesmo numero de colunas que a matriz');
         }
-        $this->matriz[$this->NumeroLinha] = array_map(fn (float|int $n) => $n, $linha);
+        $this->matriz[$this->NumeroLinha] = array_map(fn (float|int $n) => normalizar($n), $linha);
         ++$this->NumeroLinha;
     }
 
@@ -80,7 +80,7 @@ class Matriz extends MatrizBase
             throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
         }
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
-            $this->matriz[$i][$j] = $valor[$i][0];
+            $this->matriz[$i][$j] = normalizar($valor[$i][0]);
         }
     }
 
@@ -93,7 +93,7 @@ class Matriz extends MatrizBase
 
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
             for ($j = 0; $j < $this->NumeroColuna; ++$j) {
-                $matrizSoma[$i][$j] = $this->Item($i, $j) + $matriz->Item($i, $j);
+                $matrizSoma[$i][$j] = normalizar($this->Item($i, $j) + $matriz->Item($i, $j));
             }
         }
 
@@ -112,7 +112,7 @@ class Matriz extends MatrizBase
                 for ($k = 0; $k < $matriz->NumeroLinha; ++$k) {
                     $soma += $this->Item($i, $k) * $matriz->Item($k, $j);
                 }
-                $matrizMultiplicacao[$i][$j] = eZero($soma) ? 0 : $soma;
+                $matrizMultiplicacao[$i][$j] = normalizar($soma);
             }
         }
 
@@ -181,13 +181,12 @@ class Matriz extends MatrizBase
 
     private function adicionarItem(int $i, int $j, int|float $valor): void
     {
-        $numero = eInteiro($valor) ? round($valor, 0) : $valor;
-        $this->matriz[$i][$j] = $numero;
+        $this->matriz[$i][$j] = normalizar($valor);
     }
 
     private function informarLinha(int $i, array $valor): void
     {
-        $this->matriz[$i] = array_map(fn (float|int $n) => $n, $valor);
+        $this->matriz[$i] = array_map(fn (float|int $n) => normalizar($n), $valor);
     }
 
     private function matrizEMesmaOrdem(self $matriz)
