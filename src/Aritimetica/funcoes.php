@@ -63,10 +63,16 @@ if (!function_exists('eInteiro')) {
     function eInteiro(int|float $valor): bool
     {
         $numero = round(abs($valor), 0);
-        $numeroEsquerda = $valor - ZERO_SOLIDBASE;
-        $numerDireita = $valor + ZERO_SOLIDBASE;
+        $numeroEsquerda = abs($valor) - ZERO_SOLIDBASE;
+        $numerDireita = abs($valor) + ZERO_SOLIDBASE;
 
         return entre($numeroEsquerda, $numero, $numerDireita);
+    }
+}
+if (!function_exists('normalizar')) {
+    function normalizar(int|float $valor): float|int
+    {
+        return eInteiro($valor) ? round($valor, 0) : $valor;
     }
 }
 if (!function_exists('eMenor')) {
