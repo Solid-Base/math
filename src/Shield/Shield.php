@@ -64,19 +64,21 @@ class Shield
 
     private function __matrizS(): void
     {
-        $matriz = [];
-        $numero = $this->p->obtenhaM();
-        for ($i = 0; $i < $numero; ++$i) {
-            $linha_i = $this->p->obtenhaLinha($i);
-            $linha_i = $linha_i->Transposta();
-            for ($j = $i; $j < $numero; ++$j) {
-                $linha_j = $this->p->obtenhaLinha($j);
-                $linhaj = $this->rigidez->Multiplicar($linha_j);
-                $multiplicacao = $linha_i->Multiplicar($linhaj);
-                $matriz[$i][$j] = $matriz[$j][$i] = $multiplicacao[0][0];
-            }
-        }
-        $this->s = new Matriz($matriz);
+        $matriz = $this->p->Multiplicar($this->rigidez)->Multiplicar($this->p->Transposta());
+        $this->s = $matriz;
+        // $matriz = [];
+        // $numero = $this->p->obtenhaM();
+        // for ($i = 0; $i < $numero; ++$i) {
+        //     $linha_i = $this->p->obtenhaLinha($i);
+        //     $linha_i = $linha_i->Transposta();
+        //     for ($j = $i; $j < $numero; ++$j) {
+        //         $linha_j = $this->p->obtenhaLinha($j);
+        //         $linhaj = $this->rigidez->Multiplicar($linha_j);
+        //         $multiplicacao = $linha_i->Multiplicar($linhaj);
+        //         $matriz[$i][$j] = $matriz[$j][$i] = $multiplicacao[0][0];
+        //     }
+        // }
+        // $this->s = new Matriz($matriz);
     }
 
     public function informarRigidez(Matriz $rigidez): void
@@ -92,7 +94,7 @@ class Shield
             $novo = [];
             $max = $this->p->obtenhaM();
             for ($i = 0; $i < $max; ++$i) {
-                $novo[$i] = [$matrizR[$i][0]];
+                $novo[$i] = [$matrizR[$i]];
             }
             $matrizR = new Matriz($novo);
         }
