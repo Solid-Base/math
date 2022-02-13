@@ -77,7 +77,9 @@ class Matriz extends MatrizBase implements Countable
 
     public function obtenhaLinha(int $i): Matriz
     {
-        return new Matriz([array_map(fn (float|int $n) => $n, $this->matriz[$i])]);
+        $matriz = [0 => $this->matriz[$i]];
+
+        return new Matriz($matriz);
     }
 
     public function obtenhaColuna(int $j): Matriz
