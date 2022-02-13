@@ -16,7 +16,6 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
     public function obtenhaMatriz(): array
     {
         $retorno = [];
-        var_dump(1 == $this->NumeroLinha);
         if (1 == $this->NumeroLinha) {
             return array_map(fn (float|int $n) => normalizar($n), $this->matriz[0]);
         }
