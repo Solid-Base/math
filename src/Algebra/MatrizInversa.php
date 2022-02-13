@@ -23,9 +23,9 @@ class MatrizInversa
         $identidade = FabricaMatriz::Identidade($ordem);
         $resultado = FabricaMatriz::Nula($ordem);
         for ($i = 0; $i < $ordem; ++$i) {
-            $b = new Matriz($identidade->obtenhaColuna($i));
+            $b = $identidade->obtenhaColuna($i);
             $solucao = $decomposicao->ResolverSistema($b);
-            $resultado->informarColuna($i, $solucao->obtenhaColuna(0));
+            $resultado->informarColuna($i, $solucao);
         }
 
         return $resultado;

@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace SolidBase\Matematica\Algebra;
 
+use Countable;
 use DomainException;
 use InvalidArgumentException;
 use SolidBase\Matematica\Excecao\ExcecaoColunaNaoExiste;
 
-class Matriz extends MatrizBase
+class Matriz extends MatrizBase implements Countable
 {
-    public function __construct(array $matriz)
+    public function __construct(array|Matriz $matriz)
     {
+        $matriz = is_a($matriz, Matriz::class) ? $matriz->obtenhaMatriz() : $matriz;
         $this->NumeroLinha = \count($matriz);
         $this->NumeroColuna = \is_array($matriz[0]) ? \count($matriz[0]) : 1;
         foreach ($matriz as $i => $linha) {
@@ -24,6 +26,23 @@ class Matriz extends MatrizBase
                 $this->adicionarItem($i, $j, $valor);
             }
         }
+    }
+
+    public function count(): int
+    {
+        return count($this->matriz);
+    }
+
+    public function offsetGet($offset): Matriz|float
+    {
+        if (1 == $this->NumeroLinha) {
+            return $this->obtenhaColuna($offset)->obtenhaMatriz()[0];
+        }
+        if (1 == $this->NumeroColuna) {
+            return $this->obtenhaLinha($offset)->obtenhaMatriz()[0];
+        }
+
+        return $this->obtenhaLinha($offset);
     }
 
     public function adicionarColuna(array $coluna): void
@@ -56,12 +75,12 @@ class Matriz extends MatrizBase
         return $this->matriz[$i][$j];
     }
 
-    public function obtenhaLinha(int $i): array
+    public function obtenhaLinha(int $i): Matriz
     {
-        return array_map(fn (float|int $n) => $n, $this->matriz[$i]);
+        return new Matriz([array_map(fn (float|int $n) => $n, $this->matriz[$i])]);
     }
 
-    public function obtenhaColuna(int $j): array
+    public function obtenhaColuna(int $j): Matriz
     {
         if ($j >= $this->NumeroColuna) {
             throw new ExcecaoColunaNaoExiste();
@@ -71,16 +90,17 @@ class Matriz extends MatrizBase
             $retorno[$i][0] = $this->matriz[$i][$j];
         }
 
-        return $retorno;
+        return new Matriz($retorno);
     }
 
-    public function informarColuna(int $j, array $valor): void
+    public function informarColuna(int $j, array|Matriz $valor): void
     {
         if (!isset($this->matriz[0][$j]) || \count($valor) > $this->NumeroLinha) {
             throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
         }
+        $valor = is_array($valor) ? new Matriz($valor) : $valor;
         for ($i = 0; $i < $this->NumeroLinha; ++$i) {
-            $this->matriz[$i][$j] = normalizar($valor[$i][0]);
+            $this->matriz[$i][$j] = normalizar($valor[$i]);
         }
     }
 
@@ -155,6 +175,20 @@ class Matriz extends MatrizBase
     public function Transposta(): self
     {
         $matriz = [];
+        if (1 == $this->NumeroLinha) {
+            for ($j = 0; $j < $this->NumeroColuna; ++$j) {
+                $matriz[$j][0] = $this[$j];
+            }
+
+            return new self($matriz);
+        }
+        if (1 == $this->NumeroColuna) {
+            for ($j = 0; $j < $this->NumeroLinha; ++$j) {
+                $matriz[0][$j] = $this[$j];
+            }
+
+            return new self($matriz);
+        }
         for ($i = 0; $i < $this->obtenhaM(); ++$i) {
             for ($j = 0; $j < $this->obtenhaN(); ++$j) {
                 $matriz[$j][$i] = $this[$i][$j];
@@ -184,8 +218,9 @@ class Matriz extends MatrizBase
         $this->matriz[$i][$j] = normalizar($valor);
     }
 
-    private function informarLinha(int $i, array $valor): void
+    private function informarLinha(int $i, array|Matriz $valor): void
     {
+        $valor = is_array($valor) ? $valor : $valor->obtenhaMatriz();
         $this->matriz[$i] = array_map(fn (float|int $n) => normalizar($n), $valor);
     }
 

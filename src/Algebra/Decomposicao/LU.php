@@ -85,13 +85,13 @@ class LU extends Decomposicao
         $m = $L->obtenhaM();
         $Pb = $P->Multiplicar($B);
         $y = [];
-        $y[0] = $Pb[0][0] / $L[0][0];
+        $y[0] = $Pb[0] / $L[0][0];
         for ($i = 1; $i < $m; ++$i) {
             $soma = 0;
             for ($j = 0; $j <= $i - 1; ++$j) {
                 $soma += $L[$i][$j] * $y[$j];
             }
-            $y[$i] = ($Pb[$i][0] - $soma) / $L[$i][$i];
+            $y[$i] = ($Pb[$i] - $soma) / $L[$i][$i];
         }
 
         $x = [];
@@ -122,8 +122,8 @@ class LU extends Decomposicao
             $det = $det * $u[$i][$i];
         }
 
-        $retorno = $det * (-1 ** $trocas);
-        $this->determinante = eZero($retorno) ? 0 : $retorno;
+        $retorno = $det * ((-1) ** $trocas);
+        $this->determinante = normalizar($retorno);
 
         return $this->determinante;
     }

@@ -16,10 +16,12 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
     public function obtenhaMatriz(): array
     {
         $retorno = [];
+        if (1 == $this->NumeroLinha) {
+            return array_map(fn (float|int $n) => normalizar($n), $this->matriz[0]);
+        }
         foreach ($this->matriz as $linha => $valores) {
             foreach ($valores as $coluna => $valor) {
-                $numero = eZero($valor) ? 0 : $valor;
-                $retorno[$linha][$coluna] = $numero;
+                $retorno[$linha][$coluna] = normalizar($valor);
             }
         }
 
@@ -46,7 +48,7 @@ abstract class MatrizBase implements \ArrayAccess, \JsonSerializable
         return isset($this->matriz[$offset]);
     }
 
-    public function offsetGet($offset): array|float
+    public function offsetGet($offset): mixed
     {
         if (is_array($this->matriz[$offset])) {
             return $this->matriz[$offset];

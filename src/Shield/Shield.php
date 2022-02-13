@@ -67,10 +67,10 @@ class Shield
         $matriz = [];
         $numero = $this->p->obtenhaM();
         for ($i = 0; $i < $numero; ++$i) {
-            $linha_i = new Matriz($this->p->obtenhaLinha($i));
+            $linha_i = $this->p->obtenhaLinha($i);
             $linha_i = $linha_i->Transposta();
             for ($j = $i; $j < $numero; ++$j) {
-                $linha_j = new Matriz($this->p->obtenhaLinha($j));
+                $linha_j = $this->p->obtenhaLinha($j);
                 $linhaj = $this->rigidez->Multiplicar($linha_j);
                 $multiplicacao = $linha_i->Multiplicar($linhaj);
                 $matriz[$i][$j] = $matriz[$j][$i] = $multiplicacao[0][0];
