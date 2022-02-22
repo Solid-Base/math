@@ -21,7 +21,7 @@ if (!function_exists('mod')) {
 }
 
 if (!function_exists('eIgual')) {
-    function eIgual(int|float $valor1, int|float $valor2, $estrito = true): bool
+    function eIgual(int|float $valor1, int|float $valor2, $estrito = false): bool
     {
         if ($estrito) {
             return $valor1 === $valor2;

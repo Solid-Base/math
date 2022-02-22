@@ -19,5 +19,8 @@
             "name": "Guilherme Luiz",
             "email": "guilherme@solidbase.com.br"
         }
-    ]
+    ],
+    "require-dev": {
+        "phpstan/phpstan": "^1.4"
+    }
 }

@@ -22,7 +22,7 @@ class LU extends Decomposicao
     ) {
     }
 
-    public static function Decompor(Matriz $M): self
+    public static function Decompor(Matriz $M): LU
     {
         self::$trocasAux = 0;
         if (!$M->eQuadrada()) {
@@ -54,7 +54,7 @@ class LU extends Decomposicao
         }
         $L = FabricaMatriz::Criar($L);
         $U = FabricaMatriz::Criar($U);
-        $retorno = new self($L, $U, $P);
+        $retorno = new static($L, $U, $P);
         $retorno->trocas = self::$trocasAux;
 
         return $retorno;
