@@ -21,22 +21,10 @@ class Shield
     ) {
     }
 
-    // private function __gerarRigidez(): void
-    // {
-    //     $numero = \count($this->estacas);
-    //     $estaca = $this->estacas[0];
-    //     $concreto = Concreto::Criar($estaca->obtenhaCriterio());
-    //     $diametro = $estaca->obtenhaDiametro();
-    //     $area = Circulo::Area($diametro);
-    //     $comprimento = $estaca->obtenhaComprimento();
-    //     $rigidez = ($concreto->ecs * $area) / $comprimento;
-    //     $identidade = FabricaMatriz::Identidade($numero)->Escalar($rigidez);
-    //     $this->rigidez = $identidade;
-    // }
-
     private function __gerarMatrizP(): void
     {
         $matriz = [];
+
         /** @var Ponto $ponto */
         foreach ($this->pontos as $key => $ponto) {
             $px = 1;

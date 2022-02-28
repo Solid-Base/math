@@ -19,9 +19,9 @@ class FabricaMatriz
     {
         $matriz = [];
         for ($i = 0; $i < $n; ++$i) {
-            for ($j = 0; $j < $n; ++$j) {
-                $matriz[$i][$j] = $i === $j ? 1 : 0;
-            }
+            $linha = array_fill(0, $n, 0);
+            $linha[$i] = 1;
+            $matriz[$i] = $linha;
         }
 
         return new Matriz($matriz);
