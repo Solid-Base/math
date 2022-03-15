@@ -47,8 +47,17 @@ if (!function_exists('entre')) {
     function entre(
         int|float $valorEsquerda,
         int|float $valorComparacao,
-        int|float $valorDireita
+        int|float $valorDireita,
+        bool $limitesIncluso = true
     ): bool {
+        if (!$limitesIncluso) {
+            if (eIgual($valorEsquerda, $valorComparacao)) {
+                return false;
+            }
+            if (eIgual($valorComparacao, $valorDireita)) {
+                return false;
+            }
+        }
         if (eMaior($valorEsquerda, $valorComparacao)) {
             return false;
         }
