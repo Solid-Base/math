@@ -6,7 +6,7 @@ namespace SolidBase\Matematica\Algebra\Decomposicao;
 
 use ArithmeticError;
 use DomainException;
-use SolidBase\Matematica\Algebra\FabricaMatrizNova;
+use SolidBase\Matematica\Algebra\FabricaMatriz;
 use SolidBase\Matematica\Algebra\Matriz;
 
 class DecomposicaoLU
@@ -30,8 +30,8 @@ class DecomposicaoLU
         }
 
         $n = $M->numeroColuna();
-        $U = FabricaMatrizNova::Nula($n);
-        $L = FabricaMatrizNova::Diagonal((array_fill(0, $n, 1)));
+        $U = FabricaMatriz::Nula($n);
+        $L = FabricaMatriz::Diagonal((array_fill(0, $n, 1)));
         $P = self::pivotiar($M);
         $PA = $P->multiplicar($M);
 
@@ -120,7 +120,7 @@ class DecomposicaoLU
     protected static function Pivotiar(Matriz $A): Matriz
     {
         $n = $A->numeroColuna();
-        $P = FabricaMatrizNova::Identidade($n);
+        $P = FabricaMatriz::Identidade($n);
         for ($i = 1; $i <= $n; ++$i) {
             $max = abs($A["{$i},{$i}"]);
             $linha = $i;

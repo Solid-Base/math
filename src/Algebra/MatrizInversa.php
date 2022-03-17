@@ -20,8 +20,8 @@ class MatrizInversa
         if (eZero($decomposicao->Determinante())) {
             throw new ArithmeticError('Não é possível inverter a matriz');
         }
-        $identidade = FabricaMatrizNova::Identidade($ordem);
-        $resultado = FabricaMatrizNova::Nula($ordem);
+        $identidade = FabricaMatriz::Identidade($ordem);
+        $resultado = FabricaMatriz::Nula($ordem);
         for ($i = 1; $i <= $ordem; ++$i) {
             $b = $identidade->obtenhaColuna($i);
             $solucao = $decomposicao->ResolverSistema($b);

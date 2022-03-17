@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace SolidBase\Matematica\Algebra;
 
-class FabricaMatrizNova
+class FabricaMatriz
 {
     public static function Identidade(int $n): Matriz
     {
