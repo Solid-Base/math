@@ -295,7 +295,7 @@ final class Matriz implements ArrayAccess, Countable
         }
         if (1 == $this->numeroColuna()) {
             for ($j = 1; $j <= $this->numeroLinha(); ++$j) {
-                $matriz[0][$j - 1] = $this->obtenhaElemento($j - 1, 1);
+                $matriz[0][$j - 1] = $this->obtenhaElemento($j, 1);
             }
 
             return new self($matriz);
