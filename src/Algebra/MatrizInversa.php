@@ -6,26 +6,26 @@ namespace SolidBase\Matematica\Algebra;
 
 use ArithmeticError;
 use DomainException;
-use SolidBase\Matematica\Algebra\Decomposicao\LU;
+use SolidBase\Matematica\Algebra\Decomposicao\DecomposicaoLU;
 
 class MatrizInversa
 {
     public static function Inverter(Matriz $matriz): Matriz
     {
-        if (!$matriz->eQuadrada()) {
+        if (!$matriz->eMatrizQuadrada()) {
             throw new DomainException('Para a matriz possuir inversa, a mesma deve ser quadrada.');
         }
-        $ordem = $matriz->obtenhaN();
-        $decomposicao = LU::Decompor($matriz);
+        $ordem = $matriz->numeroColuna();
+        $decomposicao = DecomposicaoLU::Decompor($matriz);
         if (eZero($decomposicao->Determinante())) {
             throw new ArithmeticError('Não é possível inverter a matriz');
         }
-        $identidade = FabricaMatriz::Identidade($ordem);
-        $resultado = FabricaMatriz::Nula($ordem);
-        for ($i = 0; $i < $ordem; ++$i) {
+        $identidade = FabricaMatrizNova::Identidade($ordem);
+        $resultado = FabricaMatrizNova::Nula($ordem);
+        for ($i = 1; $i <= $ordem; ++$i) {
             $b = $identidade->obtenhaColuna($i);
             $solucao = $decomposicao->ResolverSistema($b);
-            $resultado->informarColuna($i, $solucao);
+            $resultado->definirColuna($i, $solucao);
         }
 
         return $resultado;

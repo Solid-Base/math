@@ -4,17 +4,8 @@ declare(strict_types=1);
 
 namespace SolidBase\Matematica\Algebra;
 
-class FabricaMatriz
+class FabricaMatrizNova
 {
-    private function __construct()
-    {
-    }
-
-    public static function Criar(array $matriz): Matriz
-    {
-        return new Matriz($matriz);
-    }
-
     public static function Identidade(int $n): Matriz
     {
         $matriz = [];
@@ -27,13 +18,11 @@ class FabricaMatriz
         return new Matriz($matriz);
     }
 
-    public static function Nula(int $n): Matriz
+    public static function Nula(int $numeroLinha, ?int $numeroColuna = null): Matriz
     {
-        $matriz = [];
-        for ($i = 0; $i < $n; ++$i) {
-            $linha = array_fill(0, $n, 0);
-            $matriz[$i] = $linha;
-        }
+        $numeroColuna ??= $numeroLinha;
+        $linhas = array_fill(0, $numeroColuna, 0);
+        $matriz = array_fill(0, $numeroLinha, $linhas);
 
         return new Matriz($matriz);
     }

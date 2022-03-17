@@ -21,7 +21,38 @@ class Shield
     ) {
     }
 
-    private function __gerarMatrizP(): void
+    public function informarRigidez(Matriz $rigidez): void
+    {
+        $this->rigidez = $rigidez;
+    }
+
+    public function Calcular(Matriz $matrizR): Matriz
+    {
+        $this->gerarMatrizP();
+        $this->matrizS();
+        if ($this->p->numeroLinha() !== $matrizR->numeroLinha()) {
+            $novo = [];
+            $max = $this->p->numeroLinha();
+            for ($i = 0; $i < $max; ++$i) {
+                $novo[$i] = [$matrizR[$i]];
+            }
+            $matrizR = new Matriz($novo);
+        }
+        $inversa = MatrizInversa::Inverter($this->s);
+        $nu = $inversa->multiplicar($matrizR)->transposta();
+        $this->deslocamento = $nu;
+        $normal = $nu->multiplicar($this->p)->multiplicar($this->rigidez);
+        $this->normal = $normal;
+
+        return $normal;
+    }
+
+    public function Deslocamentos(): Matriz
+    {
+        return $this->deslocamento;
+    }
+
+    private function gerarMatrizP(): void
     {
         $matriz = [];
 
@@ -50,7 +81,7 @@ class Shield
         $this->p = new Matriz($matriz);
     }
 
-    private function __matrizS(): void
+    private function matrizS(): void
     {
         $matriz = $this->p->Multiplicar($this->rigidez)->Multiplicar($this->p->Transposta());
         $this->s = $matriz;
@@ -67,36 +98,5 @@ class Shield
         //     }
         // }
         // $this->s = new Matriz($matriz);
-    }
-
-    public function informarRigidez(Matriz $rigidez): void
-    {
-        $this->rigidez = $rigidez;
-    }
-
-    public function Calcular(Matriz $matrizR): Matriz
-    {
-        $this->__gerarMatrizP();
-        $this->__matrizS();
-        if ($this->p->obtenhaM() !== $matrizR->obtenhaM()) {
-            $novo = [];
-            $max = $this->p->obtenhaM();
-            for ($i = 0; $i < $max; ++$i) {
-                $novo[$i] = [$matrizR[$i]];
-            }
-            $matrizR = new Matriz($novo);
-        }
-        $inversa = MatrizInversa::Inverter($this->s);
-        $nu = $inversa->Multiplicar($matrizR)->Transposta();
-        $this->deslocamento = $nu;
-        $normal = $nu->Multiplicar($this->p)->Multiplicar($this->rigidez);
-        $this->normal = $normal;
-
-        return $normal;
-    }
-
-    public function Deslocamentos(): Matriz
-    {
-        return $this->deslocamento;
     }
 }
