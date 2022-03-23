@@ -33,8 +33,8 @@ class Shield
         if ($this->p->numeroLinha() !== $matrizR->numeroLinha()) {
             $novo = [];
             $max = $this->p->numeroLinha();
-            for ($i = 0; $i < $max; ++$i) {
-                $novo[$i] = [$matrizR[$i]];
+            for ($i = 1; $i <= $max; ++$i) {
+                $novo[$i - 1] = [$matrizR["{$i}"]];
             }
             $matrizR = new Matriz($novo);
         }
