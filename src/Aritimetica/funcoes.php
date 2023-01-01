@@ -133,9 +133,16 @@ if (!function_exists('comparar')) {
     }
 }
 
+if (!function_exists("zeroSolidbase")) {
+    function zeroSolidbase(int $escala): float
+    {
+        $precisao = (int) max($escala / 2, 9);
+        $zero = 1 / (10 ** $precisao);
+        return $zero;
+    }
+}
 if (!defined('ZERO_SOLIDBASE')) {
-    $scale = PRECISAO_SOLIDBASE;
-    $precisao = (int) max($scale / 2, 9);
-    $zero = 1 / (10 ** $precisao);
+    $scale = defined("PRECISAO_SOLIDBASE") ? PRECISAO_SOLIDBASE : 14;
+    $zero = zeroSolidbase($scale);
     define('ZERO_SOLIDBASE', $zero);
 }

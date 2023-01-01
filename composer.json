@@ -22,6 +22,13 @@
         }
     ],
     "require-dev": {
-        "phpstan/phpstan": "^1.4"
+        "phpstan/phpstan": "^1.4",
+        "pestphp/pest": "2.x-dev",
+        "pestphp/pest-plugin-mock": "2.x-dev"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }
