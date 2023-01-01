@@ -1,6 +1,6 @@
 <?php
 
-namespace SolidBase\Matematica\Interfaces;
+namespace SolidBase\Matematica\Interfaces\Algebra;
 
 use ArrayAccess;
 use Countable;

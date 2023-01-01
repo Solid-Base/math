@@ -4,306 +4,203 @@ declare(strict_types=1);
 
 namespace SolidBase\Matematica\Algebra;
 
-use ArrayAccess;
-use Countable;
 use DomainException;
+use InvalidArgumentException;
 use SolidBase\Matematica\Excecao\ExcecaoColunaNaoExiste;
-use SolidBase\Matematica\Excecao\ExcecaoElementoNaoExiste;
-use SolidBase\Matematica\Interfaces\IMatriz;
+use SolidBase\Matematica\Interfaces\Algebra\IMatriz;
 
-final class Matriz implements IMatriz
+class Matriz implements IMatriz
 {
-    private array $matriz;
-    private int $numeroLinha;
-    private int $numeroColuna;
-
-    public function __construct(array|Matriz $matriz)
+    public function __construct(array |Matriz $matriz)
     {
-        if ($matriz instanceof Matriz) {
-            $this->matriz = $matriz->matriz;
-            $this->numeroColuna = $matriz->numeroColuna();
-            $this->numeroLinha = $matriz->numeroLinha();
+        $matriz = is_a($matriz, Matriz::class) ? $matriz->obtenhaMatriz() : $matriz;
+        $this->numeroLinha = \count($matriz);
+        $this->numeroColuna = \is_array($matriz[0]) ? \count($matriz[0]) : 1;
+        foreach ($matriz as $i => $linha) {
+            if (!\is_array($linha)) {
+                $this->adicionarItem($i, 0, $linha);
 
-            return;
-        }
-        $this->numeroLinha = count($matriz);
-        $this->numeroColuna = count($matriz[0]);
-        for ($i = 0; $i < $this->numeroLinha; ++$i) {
-            for ($j = 0; $j < $this->numeroColuna; ++$j) {
-                $this->matriz[$i][$j] = $matriz[$i][$j] ?? 0;
+                continue;
+            }
+            foreach ($linha as $j => $valor) {
+                $this->adicionarItem($i, $j, $valor);
             }
         }
     }
+    protected array $matriz = [];
 
-    /**
-     * @param string $offset
-     */
-    public function offsetExists(mixed $offset): bool
+    protected int $numeroLinha;
+    protected int $numeroColuna;
+
+    public function obtenhaMatriz(): array
     {
-        if ($this->eSeparadorUnitario($offset)) {
-            $j = intval($offset);
-
-            return (1 == $this->numeroColuna || 1 == $this->numeroLinha) && ($j <= $this->numeroColuna || $j <= $this->numeroLinha);
-        }
-        [$i,$j] = $this->explodeOffset($offset);
-
-        return entre(1, $i + 1, $this->numeroLinha) && entre(1, $j + 1, $this->numeroColuna);
-    }
-
-    /**
-     * @param string $offset
-     */
-    public function offsetGet(mixed $offset): mixed
-    {
-        if (!$this->offsetExists($offset)) {
-            throw new ExcecaoElementoNaoExiste();
-        }
-        if (!$this->eSeparadorUnitario($offset)) {
-            [$i,$j] = $this->explodeOffset($offset);
-
-            return $this->obtenhaElemento($i + 1, $j + 1);
-        }
-        $j = intval($offset);
-        if (1 == $this->numeroColuna) {
-            return $this->obtenhaElemento($j, 1);
-        }
+        $retorno = [];
         if (1 == $this->numeroLinha) {
-            return $this->obtenhaElemento(1, $j);
+            return array_map(fn (float|int $n) => normalizar($n), $this->matriz[0]);
         }
-        $this->obtenhaLinha($j);
-    }
-
-    public function obtenhaElemento(int $i, int $j): float
-    {
-        if ($this->offsetExists("{$i},{$j}")) {
-            return normalizar($this->matriz[$i - 1][$j - 1] ?? 0);
-        }
-
-        throw new DomainException('Não existe o elemento nessa posição');
-    }
-
-    public function definirElemento(int $i, int $j, float $valor): static
-    {
-        if (!(entre(1, $i, $this->numeroLinha) || entre(1, $j, $this->numeroColuna))) {
-            throw new DomainException('As posições informadas não são compativeis com a matriz');
-        }
-        $this->matriz[$i - 1][$j - 1] = $valor;
-
-        return $this;
-    }
-
-    public function definirLinha(int $i, array|Matriz $matriz): static
-    {
-        if (!entre(1, $i, $this->numeroLinha) || ($matriz instanceof Matriz && !$matriz->eMatrizLinha())) {
-            throw new DomainException('As posição de linha informada não é compativeis com a matriz');
-        }
-        $valores = $matriz instanceof Matriz ? $matriz->matriz[0] : $matriz;
-        foreach ($valores as $j => $valor) {
-            $this->definirElemento($i, $j + 1, $valor);
-        }
-
-        return $this;
-    }
-
-    public function definirColuna(int $j, array|Matriz $matriz): static
-    {
-        if (!entre(1, $j, $this->numeroColuna) || ($matriz instanceof Matriz && !$matriz->eMatrizColuna())) {
-            throw new DomainException('As posição de coluna informada não é compativeis com a matriz');
-        }
-
-        $valores = $matriz instanceof Matriz ? $matriz->matriz : $matriz;
-        foreach ($valores as $i => $valor) {
-            $this->definirElemento($i + 1, $j, $valor[0]);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string                 $offset
-     * @param array|float|int|Matriz $value
-     */
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        if (is_float($value) || is_int($value)) {
-            if ($this->eSeparadorUnitario($offset)) {
-                throw new DomainException('As posições informadas não são compativeis com a matriz');
+        foreach ($this->matriz as $linha => $valores) {
+            foreach ($valores as $coluna => $valor) {
+                $retorno[$linha][$coluna] = normalizar($valor);
             }
-            [$i,$j] = $this->explodeOffset($offset);
-            $this->definirElemento($i + 1, $j + 1, $value);
-
-            return;
         }
 
-        if ($this->eSeparadorUnitario($offset) && ($value instanceof Matriz || is_array($value))) {
-            $value = $value instanceof Matriz ? $value->matriz : $value;
-            if (1 == count($value)) {
-                $this->definirLinha(intval($offset), $value[0]);
-
-                return;
-            }
-            $this->definirColuna(intval($offset), $value);
-        }
+        return $retorno;
     }
 
-    /**
-     * @param string $offset
-     */
-    public function offsetUnset(mixed $offset): void
-    {
-        if ($this->eSeparadorUnitario($offset)) {
-            $valores = array_fill(1, $this->numeroColuna, 0);
-            $this->definirLinha(intval($offset), $valores);
-
-            return;
-        }
-        [$i,$j] = $this->explodeOffset($offset);
-
-        $this->definirElemento($i, $j, 0);
-    }
-
-    public function count(): int
-    {
-        return $this->numeroColuna * $this->numeroLinha;
-    }
-
-    public function obtenhaColuna(int $j): Matriz
-    {
-        if (!entre(1, $j, $this->numeroColuna)) {
-            throw new ExcecaoColunaNaoExiste();
-        }
-        $matrizRetorno = [];
-        for ($i = 0; $i < $this->numeroLinha; ++$i) {
-            $matrizRetorno[$i] = [$this->obtenhaElemento($i + 1, $j)];
-        }
-
-        return new Matriz($matrizRetorno);
-    }
-
-    public function obtenhaLinha(int $i): Matriz
-    {
-        if (!entre(1, $i, $this->numeroLinha)) {
-            throw new ExcecaoColunaNaoExiste();
-        }
-        $retorno = $this->matriz[$i - 1];
-
-        return new Matriz([$retorno]);
-    }
-
-    public function numeroLinha(): int
+    public function obtenhaM(): int
     {
         return $this->numeroLinha;
     }
 
-    public function numeroColuna(): int
+    public function obtenhaN(): int
     {
         return $this->numeroColuna;
     }
 
-    public function eMatrizLinha(): bool
+    public function eQuadrada(): bool
     {
-        return 1 == $this->numeroLinha;
+        return $this->numeroColuna === $this->numeroLinha;
     }
 
-    public function eMatrizColuna(): bool
+    public function offsetExists($offset): bool
     {
-        return 1 == $this->numeroColuna;
+        return isset($this->matriz[$offset]);
     }
 
-    public function eMatrizQuadrada(): bool
+    public function offsetSet($offset, $value): void
     {
-        return $this->numeroColuna() == $this->numeroLinha();
+        throw new DomainException('Não é possível setar valores isolados na matriz');
     }
 
-    public function eMatrizIdentidade(): bool
+    public function offsetUnset($offset): void
     {
-        if (!$this->eMatrizQuadrada()) {
-            return false;
+        throw new DomainException('Não é possível apagar valores isolados da matriz');
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->matriz;
+    }
+
+    public function count(): int
+    {
+        return count($this->matriz);
+    }
+
+    public function offsetGet($offset): IMatriz|float
+    {
+        if (1 == $this->numeroLinha) {
+            return $this->obtenhaColuna($offset)->obtenhaMatriz()[0];
+        }
+        if (1 == $this->numeroColuna) {
+            return $this->obtenhaLinha($offset)->obtenhaMatriz()[0];
+        }
+        return $this->obtenhaLinha($offset);
+    }
+
+    public function adicionarColuna(array $coluna): void
+    {
+        if (\count($coluna) != $this->numeroLinha) {
+            throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
+        }
+        $j = $this->numeroColuna;
+        for ($i = 0; $i < \count($coluna); ++$i) {
+            $this->adicionarItem($i, $j, $coluna[$i]);
+        }
+        ++$this->numeroColuna;
+    }
+
+    public function adicionarLinha(array $linha): void
+    {
+        if (\count($linha) != $this->numeroColuna) {
+            throw new DomainException('Para adicionar uma linha, a mesma deve ter o mesmo numero de colunas que a matriz');
+        }
+        $this->matriz[$this->numeroLinha] = array_map(fn (float|int $n) => normalizar($n), $linha);
+        ++$this->numeroLinha;
+    }
+
+    public function Item(int $i, int $j): float|int
+    {
+        if (!isset($this->matriz[$i]) || !isset($this->matriz[$i][$j])) {
+            throw new InvalidArgumentException('Não existe o item solicitado');
         }
 
-        for ($i = 1; $i <= $this->numeroLinha(); ++$i) {
-            for ($j = 1; $j <= $this->numeroColuna(); ++$j) {
-                if (($i == $j && !eIgual($this->obtenhaElemento($i, $i), 1))) {
-                    return false;
-                }
-                if ($i != $j && !eZero($this->obtenhaElemento($i, $j))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return $this->matriz[$i][$j];
     }
 
-    // Operações de matrizes
+    public function obtenhaLinha(int $i): IMatriz
+    {
+        $matriz = [0 => $this->matriz[$i]];
 
-    public function somar(self $matriz): self
+        return new Matriz($matriz);
+    }
+
+    public function obtenhaColuna(int $j): IMatriz
+    {
+        if ($j >= $this->numeroColuna) {
+            throw new ExcecaoColunaNaoExiste();
+        }
+        $retorno = [];
+        for ($i = 0; $i < $this->numeroLinha; ++$i) {
+            $retorno[$i][0] = $this->matriz[$i][$j];
+        }
+
+        return new Matriz($retorno);
+    }
+
+    public function informarColuna(int $j, array |IMatriz $valor): void
+    {
+        if (!isset($this->matriz[0][$j]) || \count($valor) > $this->numeroLinha) {
+            throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
+        }
+        $valor = is_array($valor) ? new Matriz($valor) : $valor;
+        for ($i = 0; $i < $this->numeroLinha; ++$i) {
+            $this->matriz[$i][$j] = normalizar((float)$valor[$i]);
+        }
+    }
+
+    public function Somar(IMatriz $matriz): IMatriz
     {
         if (!$this->matrizEMesmaOrdem($matriz)) {
             throw new DomainException('Para somar duas matrizes, é necessário que as mesmas possuem a mesma ordem');
         }
         $matrizSoma = [];
 
-        for ($i = 1; $i <= $this->numeroLinha; ++$i) {
-            for ($j = 1; $j <= $this->numeroColuna; ++$j) {
-                $matrizSoma[$i - 1][$j - 1] = normalizar($this->obtenhaElemento($i, $j) + $matriz->obtenhaElemento($i, $j));
+        for ($i = 0; $i < $this->numeroLinha; ++$i) {
+            for ($j = 0; $j < $this->numeroColuna; ++$j) {
+                $matrizSoma[$i][$j] = normalizar($this->Item($i, $j) + $matriz->Item($i, $j));
             }
         }
 
         return new self($matrizSoma);
     }
 
-    public function multiplicar(self $matriz): self
+    public function Multiplicar(IMatriz $matriz): IMatriz
     {
-        if ($this->numeroColuna() != $matriz->numeroLinha()) {
+        if ($this->numeroColuna != $matriz->obtenhaM()) {
             throw new DomainException('Para multiplicar matrizes, a primeira matriz deve ter o numero de colunas igual ao da segunda.');
         }
+        /** @var int[] */
         $matrizMultiplicacao = [];
-        for ($i = 1; $i <= $this->numeroLinha(); ++$i) {
-            for ($j = 1; $j <= $matriz->numeroColuna(); ++$j) {
+        for ($i = 0; $i < $this->numeroLinha; ++$i) {
+            for ($j = 0; $j < $matriz->obtenhaN(); ++$j) {
                 $soma = 0;
-                for ($k = 1; $k <= $matriz->numeroLinha(); ++$k) {
-                    $soma += $this->obtenhaElemento($i, $k) * $matriz->obtenhaElemento($k, $j);
+                for ($k = 0; $k < $matriz->obtenhaM(); ++$k) {
+                    $soma += $this->Item($i, $k) * $matriz->Item($k, $j);
                 }
-                $matrizMultiplicacao[$i - 1][$j - 1] = normalizar($soma);
+                $matrizMultiplicacao[$i][$j] = normalizar($soma);
             }
         }
 
         return new self($matrizMultiplicacao);
     }
 
-    public function escalar(float|int $escala): self
+    public function Escalar(float|int $escala): IMatriz
     {
         $matriz = [];
-        for ($i = 1; $i <= $this->numeroLinha(); ++$i) {
-            for ($j = 1; $j <= $this->numeroColuna(); ++$j) {
-                $matriz[$i - 1][$j - 1] = $this->obtenhaElemento($i, $j) * $escala;
-            }
-        }
-
-        return new self($matriz);
-    }
-
-    public function transposta(): self
-    {
-        $matriz = [];
-        if (1 == $this->numeroLinha()) {
-            for ($j = 1; $j <= $this->numeroColuna(); ++$j) {
-                $matriz[$j - 1] = [$this->obtenhaElemento(1, $j)];
-            }
-
-            return new self($matriz);
-        }
-        if (1 == $this->numeroColuna()) {
-            for ($j = 1; $j <= $this->numeroLinha(); ++$j) {
-                $matriz[0][$j - 1] = $this->obtenhaElemento($j, 1);
-            }
-
-            return new self($matriz);
-        }
-        for ($i = 1; $i <= $this->numeroLinha(); ++$i) {
-            for ($j = 1; $j <= $this->numeroColuna(); ++$j) {
-                $matriz[$j - 1][$i - 1] = $this->obtenhaElemento($i, $j);
+        for ($i = 0; $i < $this->numeroLinha; ++$i) {
+            for ($j = 0; $j < $this->numeroColuna; ++$j) {
+                $matriz[$i][$j] = $this->matriz[$i][$j] * $escala;
             }
         }
 
@@ -315,54 +212,71 @@ final class Matriz implements IMatriz
         $linha = $this->obtenhaLinha($i);
         $linhaTroca = $this->obtenhaLinha($iTroca);
 
-        $this->definirLinha($iTroca, $linha);
-        $this->definirLinha($i, $linhaTroca);
+        $this->informarLinha($iTroca, $linha);
+        $this->informarLinha($i, $linhaTroca);
     }
 
-    public function trocarColuna(int $j, int $jTroca): void
+    public function Transposta(): IMatriz
     {
-        $coluna = $this->obtenhaColuna($j);
-        $colunaTroca = $this->obtenhaColuna($jTroca);
+        $matriz = [];
+        if (1 == $this->numeroLinha) {
+            for ($j = 0; $j < $this->numeroColuna; ++$j) {
+                $matriz[$j][0] = $this[$j];
+            }
 
-        $this->definirColuna($jTroca, $coluna);
-        $this->definirColuna($j, $colunaTroca);
+            return new self($matriz);
+        }
+        if (1 == $this->numeroColuna) {
+            for ($j = 0; $j < $this->numeroLinha; ++$j) {
+                $matriz[0][$j] = $this[$j];
+            }
+
+            return new self($matriz);
+        }
+        for ($i = 0; $i < $this->obtenhaM(); ++$i) {
+            for ($j = 0; $j < $this->obtenhaN(); ++$j) {
+                $matriz[$j][$i] = $this[$i][$j];
+            }
+        }
+
+        return new self($matriz);
     }
 
-    public function adicionarColuna(array|Matriz $coluna): static
+    public function eIdentidade(): bool
     {
-        ++$this->numeroColuna;
-        $this->definirColuna($this->numeroColuna, $coluna);
+        if (!$this->eQuadrada()) {
+            return false;
+        }
+        $t = $this->obtenhaN();
+        for ($i = 0; $i < $t; ++$i) {
+            if (!eZero($this->Item($i, $i) - 1)) {
+                return false;
+            }
+        }
 
-        return $this;
+        return true;
     }
 
-    public function adicionarLinha(array|Matriz $linha): static
+    private function adicionarItem(int $i, int $j, int|float $valor): void
     {
-        ++$this->numeroLinha;
-        $this->definirLinha($this->numeroLinha, $linha);
-
-        return $this;
+        $this->matriz[$i][$j] = normalizar($valor);
     }
 
-    private function numeroSeparadorOffset(string $offset): int
+    private function informarLinha(int $i, array |Matriz $valor): void
     {
-        return mb_substr_count($offset, ',');
+        $valor = is_array($valor) ? $valor : $valor->obtenhaMatriz();
+        $this->matriz[$i] = array_map(fn (float|int $n) => normalizar($n), $valor);
     }
 
-    private function eSeparadorUnitario(string $offset): bool
-    {
-        return 0 == $this->numeroSeparadorOffset($offset);
-    }
 
-    private function explodeOffset(string $offset): array
+    /**
+     * > It returns true if the number of rows and columns of the matrix passed as a parameter are the
+     * same as the number of rows and columns of the matrix that called the function
+     *
+     * @param IMatriz matriz The matrix to be compared.
+     */
+    private function matrizEMesmaOrdem(IMatriz $matriz): bool
     {
-        [$i,$j] = explode(',', $offset);
-
-        return [intval($i) - 1, intval($j) - 1];
-    }
-
-    private function matrizEMesmaOrdem(self $matriz): bool
-    {
-        return $matriz->numeroColuna() == $this->numeroColuna() && $matriz->numeroLinha() == $this->numeroLinha();
+        return $matriz->obtenhaM() === $this->numeroLinha || $matriz->obtenhaN() === $this->numeroColuna;
     }
 }
