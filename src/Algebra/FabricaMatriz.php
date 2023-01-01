@@ -4,9 +4,20 @@ declare(strict_types=1);
 
 namespace SolidBase\Matematica\Algebra;
 
+use SolidBase\Matematica\Interfaces\Algebra\IMatriz;
+
 class FabricaMatriz
 {
-    public static function Identidade(int $n): Matriz
+    private function __construct()
+    {
+    }
+
+    public static function Criar(array $matriz): IMatriz
+    {
+        return new Matriz($matriz);
+    }
+
+    public static function Identidade(int $n): IMatriz
     {
         $matriz = [];
         for ($i = 0; $i < $n; ++$i) {
@@ -18,16 +29,18 @@ class FabricaMatriz
         return new Matriz($matriz);
     }
 
-    public static function Nula(int $numeroLinha, ?int $numeroColuna = null): Matriz
+    public static function Nula(int $n): IMatriz
     {
-        $numeroColuna ??= $numeroLinha;
-        $linhas = array_fill(0, $numeroColuna, 0);
-        $matriz = array_fill(0, $numeroLinha, $linhas);
+        $matriz = [];
+        for ($i = 0; $i < $n; ++$i) {
+            $linha = array_fill(0, $n, 0);
+            $matriz[$i] = $linha;
+        }
 
         return new Matriz($matriz);
     }
 
-    public static function Diagonal(array $diagonal): Matriz
+    public static function Diagonal(array $diagonal): IMatriz
     {
         $n = \count($diagonal);
         $matriz = [];

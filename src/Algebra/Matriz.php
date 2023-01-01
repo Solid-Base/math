@@ -90,12 +90,12 @@ class Matriz implements IMatriz
     public function offsetGet($offset): IMatriz|float
     {
         if (1 == $this->numeroLinha) {
-            return $this->obtenhaColuna($offset)->obtenhaMatriz()[0];
+            return $this->obterColuna($offset)->obtenhaMatriz()[0];
         }
         if (1 == $this->numeroColuna) {
-            return $this->obtenhaLinha($offset)->obtenhaMatriz()[0];
+            return $this->obterLinha($offset)->obtenhaMatriz()[0];
         }
-        return $this->obtenhaLinha($offset);
+        return $this->obterLinha($offset);
     }
 
     public function adicionarColuna(array $coluna): void
@@ -119,7 +119,7 @@ class Matriz implements IMatriz
         ++$this->numeroLinha;
     }
 
-    public function Item(int $i, int $j): float|int
+    public function item(int $i, int $j): float|int
     {
         if (!isset($this->matriz[$i]) || !isset($this->matriz[$i][$j])) {
             throw new InvalidArgumentException('Não existe o item solicitado');
@@ -128,14 +128,14 @@ class Matriz implements IMatriz
         return $this->matriz[$i][$j];
     }
 
-    public function obtenhaLinha(int $i): IMatriz
+    public function obterLinha(int $i): IMatriz
     {
         $matriz = [0 => $this->matriz[$i]];
 
         return new Matriz($matriz);
     }
 
-    public function obtenhaColuna(int $j): IMatriz
+    public function obterColuna(int $j): IMatriz
     {
         if ($j >= $this->numeroColuna) {
             throw new ExcecaoColunaNaoExiste();
@@ -148,7 +148,7 @@ class Matriz implements IMatriz
         return new Matriz($retorno);
     }
 
-    public function informarColuna(int $j, array |IMatriz $valor): void
+    public function definirColuna(int $j, array |IMatriz $valor): void
     {
         if (!isset($this->matriz[0][$j]) || \count($valor) > $this->numeroLinha) {
             throw new DomainException('Para adicionar uma coluna, a mesma deve ter o mesmo numero de linhas que a matriz');
@@ -159,7 +159,7 @@ class Matriz implements IMatriz
         }
     }
 
-    public function Somar(IMatriz $matriz): IMatriz
+    public function somar(IMatriz $matriz): IMatriz
     {
         if (!$this->matrizEMesmaOrdem($matriz)) {
             throw new DomainException('Para somar duas matrizes, é necessário que as mesmas possuem a mesma ordem');
@@ -168,14 +168,14 @@ class Matriz implements IMatriz
 
         for ($i = 0; $i < $this->numeroLinha; ++$i) {
             for ($j = 0; $j < $this->numeroColuna; ++$j) {
-                $matrizSoma[$i][$j] = normalizar($this->Item($i, $j) + $matriz->Item($i, $j));
+                $matrizSoma[$i][$j] = normalizar($this->item($i, $j) + $matriz->item($i, $j));
             }
         }
 
         return new self($matrizSoma);
     }
 
-    public function Multiplicar(IMatriz $matriz): IMatriz
+    public function multiplicar(IMatriz $matriz): IMatriz
     {
         if ($this->numeroColuna != $matriz->obtenhaM()) {
             throw new DomainException('Para multiplicar matrizes, a primeira matriz deve ter o numero de colunas igual ao da segunda.');
@@ -186,7 +186,7 @@ class Matriz implements IMatriz
             for ($j = 0; $j < $matriz->obtenhaN(); ++$j) {
                 $soma = 0;
                 for ($k = 0; $k < $matriz->obtenhaM(); ++$k) {
-                    $soma += $this->Item($i, $k) * $matriz->Item($k, $j);
+                    $soma += $this->item($i, $k) * $matriz->item($k, $j);
                 }
                 $matrizMultiplicacao[$i][$j] = normalizar($soma);
             }
@@ -195,7 +195,7 @@ class Matriz implements IMatriz
         return new self($matrizMultiplicacao);
     }
 
-    public function Escalar(float|int $escala): IMatriz
+    public function escalar(float|int $escala): IMatriz
     {
         $matriz = [];
         for ($i = 0; $i < $this->numeroLinha; ++$i) {
@@ -209,14 +209,14 @@ class Matriz implements IMatriz
 
     public function trocarLinha(int $i, int $iTroca): void
     {
-        $linha = $this->obtenhaLinha($i);
-        $linhaTroca = $this->obtenhaLinha($iTroca);
+        $linha = $this->obterLinha($i);
+        $linhaTroca = $this->obterLinha($iTroca);
 
         $this->informarLinha($iTroca, $linha);
         $this->informarLinha($i, $linhaTroca);
     }
 
-    public function Transposta(): IMatriz
+    public function transposta(): IMatriz
     {
         $matriz = [];
         if (1 == $this->numeroLinha) {
@@ -249,7 +249,7 @@ class Matriz implements IMatriz
         }
         $t = $this->obtenhaN();
         for ($i = 0; $i < $t; ++$i) {
-            if (!eZero($this->Item($i, $i) - 1)) {
+            if (!eZero($this->item($i, $i) - 1)) {
                 return false;
             }
         }

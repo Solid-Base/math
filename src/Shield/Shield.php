@@ -83,7 +83,7 @@ class Shield
 
     private function matrizS(): void
     {
-        $matriz = $this->p->Multiplicar($this->rigidez)->Multiplicar($this->p->Transposta());
+        $matriz = $this->p->multiplicar($this->rigidez)->multiplicar($this->p->transposta());
         $this->s = $matriz;
         // $matriz = [];
         // $numero = $this->p->obtenhaM();

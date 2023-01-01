@@ -34,13 +34,11 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
         if (!$M->eQuadrada()) {
             throw new DomainException('Para fatoração LU, é necessário que a matriz seja de ordem quadrada.');
         }
-
         $n = $M->obtenhaN();
         $U = (FabricaMatriz::Nula($n))->obtenhaMatriz();
         $L = (FabricaMatriz::Diagonal(array_fill(0, $n, 1)))->obtenhaMatriz(false);
         $P = self::pivotiar($M);
-        $PA = $P->Multiplicar($M);
-
+        $PA = $P->multiplicar($M);
         for ($i = 0; $i < $n; ++$i) {
             for ($j = 0; $j <= $i; ++$j) {
                 $soma = 0;
@@ -76,15 +74,15 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
         $U = $this->U;
         $P = $this->P;
         $m = $L->obtenhaM();
-        $Pb = $P->Multiplicar($B);
+        $Pb = $P->multiplicar($B);
         $y = [];
-        $y[0] = $Pb[0] / $L[0][0];
+        $y[0] = (float)$Pb[0] / $L[0][0];
         for ($i = 1; $i < $m; ++$i) {
             $soma = 0;
             for ($j = 0; $j <= $i - 1; ++$j) {
                 $soma += $L[$i][$j] * $y[$j];
             }
-            $y[$i] = ($Pb[$i] - $soma) / $L[$i][$i];
+            $y[$i] = ((float)$Pb[$i] - $soma) / $L[$i][$i];
         }
 
         $x = [];
@@ -94,9 +92,9 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
             for ($j = $i + 1; $j < $m; ++$j) {
                 $soma += $U[$i][$j] * $x[$j];
             }
-            if (eZero($U[$i][$i])) {
-                throw new ArithmeticError('Não é possível solucionar o sistema.');
-            }
+            // if (eZero($U[$i][$i])) {
+            //     throw new ArithmeticError('Não é possível solucionar o sistema.');
+            // }
             $x[$i] = ($y[$i] - $soma) / ($U[$i][$i]);
         }
 
@@ -114,9 +112,8 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
         for ($i = 0; $i < $u->obtenhaM(); ++$i) {
             $det = $det * $u[$i][$i];
         }
-
         $retorno = $det * ((-1) ** $trocas);
-        $this->determinante = normalizar($retorno);
+        $this->determinante = is_nan($retorno) ? 0 : normalizar($retorno);
 
         return $this->determinante;
     }
