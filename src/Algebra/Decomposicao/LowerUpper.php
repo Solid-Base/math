@@ -8,9 +8,9 @@ use ArithmeticError;
 use DomainException;
 use SolidBase\Matematica\Algebra\FabricaMatriz;
 use SolidBase\Matematica\Interfaces\Algebra\Decomposicao\IDecomposicao;
+use SolidBase\Matematica\Interfaces\Algebra\IDeterminante;
 use SolidBase\Matematica\Interfaces\Algebra\IMatriz;
-use SolidBase\Matematica\Interfaces\IDeterminante;
-use SolidBase\Matematica\Interfaces\IResolverSistema;
+use SolidBase\Matematica\Interfaces\Algebra\IResolverSistema;
 
 class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
 {
