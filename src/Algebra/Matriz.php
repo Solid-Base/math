@@ -9,8 +9,9 @@ use Countable;
 use DomainException;
 use SolidBase\Matematica\Excecao\ExcecaoColunaNaoExiste;
 use SolidBase\Matematica\Excecao\ExcecaoElementoNaoExiste;
+use SolidBase\Matematica\Interfaces\IMatriz;
 
-final class Matriz implements ArrayAccess, Countable
+final class Matriz implements IMatriz
 {
     private array $matriz;
     private int $numeroLinha;
