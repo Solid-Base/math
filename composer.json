@@ -1,14 +1,14 @@
 {
-    "name": "solidbase/matematica",
+    "name": "solidbase/mathematics",
     "description": "Modulo de matemática do SolidBase",
     "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "SolidBase\\Matematica\\": "src/"
+            "SolidBase\\Math\\": "src/"
         },
         "files": [
-            "src/Aritimetica/funcoes.php",
-            "src/Aritimetica/funcoesAngulos.php"
+            "src/Arithmetic/functions.php",
+            "src/Arithmetic/functionsAngles.php"
         ]
     },
     "require": {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SolidBase\Matematica\Excecao;
+namespace SolidBase\Math\Exception;
 
 use OutOfBoundsException;
 use Throwable;
 
-class ExcecaoElementoNaoExiste extends OutOfBoundsException
+class ElementDoesNotExistException extends OutOfBoundsException
 {
     public function __construct(?Throwable $previous = null)
     {

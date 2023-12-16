@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SolidBase\Matematica\Excecao;
+namespace SolidBase\Math\Exception;
 
 use OutOfBoundsException;
 use Throwable;
 
-class ExcecaoColunaNaoExiste extends OutOfBoundsException
+class ColumnDoesNotExistException extends OutOfBoundsException
 {
     public function __construct(?Throwable $previous = null)
     {

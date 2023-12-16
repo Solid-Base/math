@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SolidBase\Matematica\Algebra\Decomposicao;
+namespace SolidBase\Math\Algebra\Decomposition;
 
 use ArithmeticError;
 use DomainException;
-use SolidBase\Matematica\Algebra\FabricaMatriz;
-use SolidBase\Matematica\Interfaces\Algebra\Decomposicao\IDecomposicao;
-use SolidBase\Matematica\Interfaces\Algebra\IDeterminante;
-use SolidBase\Matematica\Interfaces\Algebra\IMatriz;
-use SolidBase\Matematica\Interfaces\Algebra\IResolverSistema;
+use SolidBase\Math\Algebra\FabricaMatriz;
+use SolidBase\Math\Algebra\Matriz;
+use SolidBase\Math\Interfaces\Algebra\Decomposition\Decompose;
+use SolidBase\Math\Interfaces\Algebra\Determinant;
+use SolidBase\Math\Interfaces\Algebra\SolveSystem;
 
-class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
+class LowerUpper implements Decompose, Determinant, SolveSystem
 {
     private int $trocas;
     private static int $trocasAux;
@@ -20,25 +20,24 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
 
     private function __construct(
         private
-        IMatriz $L,
+        Matriz $L,
         private
-        IMatriz $U,
+        Matriz $U,
         private
-        IMatriz $P
-    ) {
-    }
+        Matriz $P
+    ) {}
 
-    public static function Decompor(IMatriz $M): LowerUpper
+    public static function Decompose(Matriz $M): LowerUpper
     {
         self::$trocasAux = 0;
-        if (!$M->eQuadrada()) {
+        if (!$M->isSquare()) {
             throw new DomainException('Para fatoração LU, é necessário que a matriz seja de ordem quadrada.');
         }
-        $n = $M->obtenhaN();
-        $U = (FabricaMatriz::Nula($n))->obtenhaMatriz();
-        $L = (FabricaMatriz::Diagonal(array_fill(0, $n, 1)))->obtenhaMatriz(false);
-        $P = self::pivotiar($M);
-        $PA = $P->multiplicar($M);
+        $n = $M->getN();
+        $U = (FabricaMatriz::Zero($n))->getMatriz();
+        $L = (FabricaMatriz::Diagonal(array_fill(0, $n, 1)))->getMatriz(false);
+        $P = self::Pivot($M);
+        $PA = $P->multiply($M);
         for ($i = 0; $i < $n; ++$i) {
             for ($j = 0; $j <= $i; ++$j) {
                 $soma = 0;
@@ -53,28 +52,28 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
                 for ($k = 0; $k < $i; ++$k) {
                     $soma += $U[$k][$i] * $L[$j][$k];
                 }
-                $L[$j][$i] = (eZero($U[$i][$i])) ? NAN : ($PA[$j][$i] - $soma) / $U[$i][$i];
+                $L[$j][$i] = (sbIsZero($U[$i][$i])) ? NAN : ($PA[$j][$i] - $soma) / $U[$i][$i];
             }
         }
-        $L = FabricaMatriz::Criar($L);
-        $U = FabricaMatriz::Criar($U);
+        $L = FabricaMatriz::Create($L);
+        $U = FabricaMatriz::Create($U);
         $retorno = new static ($L, $U, $P);
         $retorno->trocas = self::$trocasAux;
 
         return $retorno;
     }
 
-    public function ResolverSistema(IMatriz $B): IMatriz
+    public function SolveSystem(Matriz $B): Matriz
     {
-        if (eZero($this->Determinante())) {
+        if (sbIsZero($this->Determinant())) {
             throw new DomainException('O sistema não possui solução!');
         }
 
         $L = $this->L;
         $U = $this->U;
         $P = $this->P;
-        $m = $L->obtenhaM();
-        $Pb = $P->multiplicar($B);
+        $m = $L->getM();
+        $Pb = $P->multiply($B);
         $y = [];
         $y[0] = (float)$Pb[0] / $L[0][0];
         for ($i = 1; $i < $m; ++$i) {
@@ -98,10 +97,10 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
             $x[$i] = ($y[$i] - $soma) / ($U[$i][$i]);
         }
 
-        return FabricaMatriz::Criar(array_reverse($x));
+        return FabricaMatriz::Create(array_reverse($x));
     }
 
-    public function Determinante(): float
+    public function Determinant(): float
     {
         if (!empty($this->determinante)) {
             return $this->determinante;
@@ -109,19 +108,19 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
         $u = $this->U;
         $det = 1;
         $trocas = $this->trocas;
-        for ($i = 0; $i < $u->obtenhaM(); ++$i) {
+        for ($i = 0; $i < $u->getM(); ++$i) {
             $det = $det * $u[$i][$i];
         }
         $retorno = $det * ((-1) ** $trocas);
-        $this->determinante = is_nan($retorno) ? 0 : normalizar($retorno);
+        $this->determinante = is_nan($retorno) ? 0 : sbNormalize($retorno);
 
         return $this->determinante;
     }
 
-    protected static function Pivotiar(IMatriz $A): IMatriz
+    protected static function Pivot(Matriz $A): Matriz
     {
-        $n = $A->obtenhaN();
-        $P = (FabricaMatriz::Identidade($n));
+        $n = $A->getN();
+        $P = (FabricaMatriz::Identity($n));
         for ($i = 0; $i < $n; ++$i) {
             $max = abs($A[$i][$i]);
             $linha = $i;
@@ -133,7 +132,7 @@ class LowerUpper implements IDecomposicao, IDeterminante, IResolverSistema
             }
             if ($i !== $linha) {
                 ++self::$trocasAux;
-                $P->trocarLinha($i, $linha);
+                $P->switchRow($i, $linha);
             }
         }
 

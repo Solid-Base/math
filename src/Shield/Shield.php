@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SolidBase\Matematica\Shield;
+namespace SolidBase\Math\Shield;
 
 use Solidbase\Geometria\Dominio\Ponto;
-use SolidBase\Matematica\Algebra\Matriz;
-use SolidBase\Matematica\Algebra\MatrizInversa;
+use SolidBase\Math\Algebra\Matriz;
+use SolidBase\Math\Algebra\InverseMatrix;
 
 class Shield
 {
@@ -18,8 +18,7 @@ class Shield
     public function __construct(
         private array $pontos,
         private Matriz $rigidez
-    ) {
-    }
+    ) {}
 
     public function informarRigidez(Matriz $rigidez): void
     {
@@ -30,18 +29,18 @@ class Shield
     {
         $this->gerarMatrizP();
         $this->matrizS();
-        if ($this->p->numeroLinha() !== $matrizR->numeroLinha()) {
+        if ($this->p->getM() !== $matrizR->getN()) {
             $novo = [];
-            $max = $this->p->numeroLinha();
+            $max = $this->p->getN();
             for ($i = 1; $i <= $max; ++$i) {
                 $novo[$i - 1] = [$matrizR["{$i}"]];
             }
             $matrizR = new Matriz($novo);
         }
-        $inversa = MatrizInversa::Inverter($this->s);
-        $nu = $inversa->multiplicar($matrizR)->transposta();
+        $inversa = InverseMatrix::Inverse($this->s);
+        $nu = $inversa->multiply($matrizR)->transpose();
         $this->deslocamento = $nu;
-        $normal = $nu->multiplicar($this->p)->multiplicar($this->rigidez);
+        $normal = $nu->multiply($this->p)->multiply($this->rigidez);
         $this->normal = $normal;
 
         return $normal;
@@ -62,8 +61,8 @@ class Shield
             $py = 0;
             $pz = 0;
             $pa = 0;
-            $pb = normalizar($ponto->x);
-            $pc = normalizar($ponto->y * -1);
+            $pb = sbNormalize($ponto->x);
+            $pc = sbNormalize($ponto->y * -1);
             $matriz[0][$key] = $px;
             // $matriz[1][$key] = $py;
             // $matriz[2][$key] = $pz;
@@ -73,8 +72,8 @@ class Shield
         }
 
         foreach ($matriz as $key => $linha) {
-            $soma = array_reduce($linha, fn (float $total, float|int $n) => $total + abs($n), 0);
-            if (eZero($soma)) {
+            $soma = array_reduce($linha, fn(float $total, float|int $n) => $total + abs($n), 0);
+            if (sbIsZero($soma)) {
                 unset($matriz[$key]);
             }
         }
@@ -83,7 +82,7 @@ class Shield
 
     private function matrizS(): void
     {
-        $matriz = $this->p->multiplicar($this->rigidez)->multiplicar($this->p->transposta());
+        $matriz = $this->p->multiply($this->rigidez)->multiply($this->p->transpose());
         $this->s = $matriz;
         // $matriz = [];
         // $numero = $this->p->obtenhaM();
