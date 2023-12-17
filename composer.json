@@ -1,7 +1,7 @@
 {
     "name": "solidbase/mathematics",
     "description": "Modulo de matemática do SolidBase",
-    "minimum-stability": "dev",
+    "type": "library",
     "autoload": {
         "psr-4": {
             "SolidBase\\Math\\": "src/"
