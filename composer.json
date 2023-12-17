@@ -2,6 +2,7 @@
     "name": "solidbase/mathematics",
     "description": "Modulo de matemática do SolidBase",
     "type": "library",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "SolidBase\\Math\\": "src/"
