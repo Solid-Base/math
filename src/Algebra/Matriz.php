@@ -149,6 +149,16 @@ class Matriz implements ArrayAccess, Countable
         return new Matriz($retorno);
     }
 
+    public function setItem(int $i, int $j, int|float $value): self
+    {
+
+        if($i >= $this->numberOfRow || $j >= $this->numberOfCol) {
+            throw new DomainException("Não existe essa entrada na Matriz");
+        }
+        $this->adicionarItem($i, $j, $value);
+        return $this;
+    }
+
     public function setCol(int $j, array |Matriz $valor): void
     {
         if (!isset($this->matriz[0][$j]) || \count($valor) > $this->numberOfRow) {
